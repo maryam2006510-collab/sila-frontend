@@ -1,0 +1,350 @@
+/* ==========================================================================
+   Sila (صِلة) UI Kit · Base Styles & Typography Overrides
+   ========================================================================== */
+
+@import './tokens.css';
+
+/* Metric-matched fallback to eliminate layout shift (CLS < 0.1) */
+@font-face {
+  font-family: 'Plex Arabic Fallback';
+  src: local('Segoe UI'), local('Tahoma'), local('Arial');
+  size-adjust: 104%;
+  ascent-override: 102%;
+  descent-override: 42%;
+  line-gap-override: 0%;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  min-height: 100vh;
+  transition:
+    background-color var(--dur-3) var(--ease-standard),
+    color var(--dur-3) var(--ease-standard);
+}
+
+/* ----------------------------------------------------------------------------
+   Arabic Typography Hard Rules (02-typography-system.md §5)
+   ---------------------------------------------------------------------------- */
+:lang(ar) {
+  letter-spacing: 0 !important;
+}
+
+/* No orphans on headings; pretty wrap on body copy */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.display-heading {
+  text-wrap: balance;
+  margin: 0;
+}
+
+p,
+li,
+dd,
+figcaption {
+  text-wrap: pretty;
+  hyphens: none;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+/* Montserrat scale balance inside Arabic text */
+:lang(ar) .latin-run,
+:lang(ar) bdi.num {
+  font-size: 0.94em;
+}
+
+/* Standalone figures (prices, KPIs) keep their designed size inside Arabic text */
+:lang(ar) bdi.num.num-standalone {
+  font-size: 1em;
+}
+
+/* Units are smaller and lighter than the figure (02-typography §4.2) */
+.num-unit {
+  white-space: nowrap;
+  font-size: 0.62em;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  user-select: none;
+}
+
+/* Digit roll columns (07-motion §5.1): one line box per digit */
+.digit-col {
+  display: inline-block;
+  height: 1lh;
+  overflow: hidden;
+}
+
+.digit-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.digit-stack > span {
+  height: 1lh;
+}
+
+/* ----------------------------------------------------------------------------
+   Tabular Numerals (Montserrat Tabular Figures)
+   ---------------------------------------------------------------------------- */
+.num,
+[data-num] {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
+  unicode-bidi: isolate;
+  direction: ltr;
+}
+
+/* ----------------------------------------------------------------------------
+   Golden Ratio Grid Helpers
+   ---------------------------------------------------------------------------- */
+.golden-split {
+  display: grid;
+  grid-template-columns: 1.618fr 1fr;
+  gap: var(--gap-md);
+}
+
+.golden-split-rev {
+  display: grid;
+  grid-template-columns: 1fr 1.618fr;
+  gap: var(--gap-md);
+}
+
+@media (max-width: 767px) {
+  .golden-split,
+  .golden-split-rev {
+    grid-template-columns: 1fr;
+    gap: var(--gap-sm);
+  }
+}
+
+/* Fixed Height Card Grid */
+.card-grid-listings {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+  grid-auto-rows: var(--g-4);
+  gap: var(--gap-md);
+}
+
+@media (max-width: 767px) {
+  .card-grid-listings {
+    grid-template-columns: 1fr;
+    gap: var(--gap-sm);
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   Brand Motifs (The Sila Cut · 20° Slanted Edge)
+   ---------------------------------------------------------------------------- */
+.sila-cut {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 100%, 0 100%);
+}
+
+[dir='rtl'] .sila-cut {
+  clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* ----------------------------------------------------------------------------
+   Selection & Skeleton Animations (No Gradients)
+   ---------------------------------------------------------------------------- */
+::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-text);
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    background-color: var(--skeleton-base);
+  }
+  50% {
+    background-color: var(--skeleton-highlight);
+  }
+}
+
+.skeleton-loading {
+  animation: skeleton-pulse var(--dur-7) ease-in-out infinite;
+}
+
+@keyframes live-square-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Regular ↔ Fill icon crossfade (03-icon §2.1) */
+.state-icon {
+  display: inline-grid;
+}
+
+.state-icon > svg {
+  grid-area: 1 / 1;
+  transition:
+    opacity var(--dur-2) var(--ease-standard),
+    transform var(--dur-3) var(--ease-out-expo);
+}
+
+.state-icon > svg[data-on='false'] {
+  opacity: 0;
+  transform: scale(0.88);
+}
+
+.state-icon > svg[data-on='true'] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Live price tick flash: delta chip background only (07-motion §3.1) */
+@keyframes tick-flash-up {
+  from {
+    background-color: var(--market-up-bg);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes tick-flash-down {
+  from {
+    background-color: var(--market-down-bg);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.tick-flash-up {
+  animation: tick-flash-up var(--dur-5) var(--ease-standard);
+}
+
+.tick-flash-down {
+  animation: tick-flash-down var(--dur-5) var(--ease-standard);
+}
+
+/* Landing market strip: the only marquee (07-motion §4.6). Content is duplicated once,
+   so moving by 50% loops seamlessly; RTL runs the other way. */
+@keyframes marquee-ltr {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-rtl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-ltr var(--marquee-duration, 40s) linear infinite;
+}
+
+[dir='rtl'] .marquee-track {
+  animation-name: marquee-rtl;
+}
+
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track,
+.marquee[data-paused='true'] .marquee-track {
+  animation-play-state: paused;
+}
+
+/* Landing brand-mark moment (05-logo §5.3): the icon built from tonal flat fills.
+   The only place logo versions 2 to 4 appear. Bars 1/3/6/7, squares 2/4/5/8. */
+.brand-mark [data-piece='1'],
+.brand-mark [data-piece='6'] {
+  fill: var(--primary-600);
+}
+
+.brand-mark [data-piece='3'],
+.brand-mark [data-piece='7'] {
+  fill: var(--secondary-500);
+}
+
+.brand-mark [data-kind='square'] {
+  fill: var(--secondary-300);
+}
+
+.brand-mark [data-piece='2'],
+.brand-mark [data-piece='8'] {
+  fill: var(--logo-on-canvas);
+}
+
+/* Accordions draw their own caret */
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Anchor targets clear the 72px landing nav */
+.landing-anchor {
+  scroll-margin-top: calc(var(--nav-landing) + var(--gap-sm));
+}
+
+/* Button loading: three logo squares pulsing in sequence (06-style §5.1) */
+.loading-square {
+  animation: live-square-pulse var(--dur-6) ease-in-out infinite;
+}
+
+.live-indicator-square {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background-color: var(--accent-400);
+  animation: live-square-pulse var(--dur-7) ease-in-out infinite;
+  display: inline-block;
+}
+
+/* ----------------------------------------------------------------------------
+   Accessibility: Reduced Motion
+   ---------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .marquee-track {
+    animation: none !important;
+  }
+}

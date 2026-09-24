@@ -1,0 +1,67 @@
+// صِلة (Sila) — ERD (v2 — Final)
+// Import directly at https://dbdiagram.io
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  role varchar [not null, note: "ENUM: investor, seller"]
+  full_name varchar [not null]
+  email varchar [not null, unique]
+  password_hash varchar [not null]
+  kyc_verified boolean [not null, default: false]
+  risk_profile varchar [note: "ENUM: low, medium, high — investor only"]
+  subscription_tier varchar [not null, default: "free", note: "ENUM: free, premium"]
+  subscription_expiry_date timestamptz [note: "تاريخ انتهاء اشتراك Premium الحالي"]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    subscription_expiry_date
+  }
+}
+
+Table asset_listings {
+  id uuid [pk, default: `gen_random_uuid()`]
+  seller_id uuid [not null, ref: > users.id]
+  total_weight_grams decimal [not null]
+  available_weight_grams decimal [not null]
+  karat smallint [not null, note: "18, 21, 22, 24"]
+  base_price_per_gram decimal [not null]
+  status varchar [not null, default: "active", note: "ENUM: active, sold_out, suspended"]
+  is_promoted boolean [not null, default: false]
+  promotion_expiry_date timestamptz
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    seller_id
+    status
+    (is_promoted, promotion_expiry_date)
+  }
+}
+
+Table transactions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  investor_id uuid [not null, ref: > users.id]
+  asset_id uuid [not null, ref: > asset_listings.id]
+  purchased_weight_grams decimal [not null]
+  execution_price_per_gram decimal [not null]
+  principal_amount decimal [not null]
+  commission_rate decimal [not null]
+  commission_amount decimal [not null]
+  total_paid_by_investor decimal [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    investor_id
+    asset_id
+    created_at
+  }
+}
+
+Table fractional_ownership_records {
+  id uuid [pk, default: `gen_random_uuid()`]
+  investor_id uuid [not null, unique, ref: - users.id]
+  total_accumulated_grams decimal [not null, default: 0]
+  digital_signature_token varchar [not null]
+  updated_at timestamptz [not null, default: `now()`]
+}

@@ -1,0 +1,478 @@
+/* ==========================================================================
+   Sila (صِلة) UI Kit · Master Tokens
+   Source of Truth for Colors, Typography, Spacing, Radii, Motion & Layers
+   ========================================================================== */
+
+:root {
+  /* --------------------------------------------------------------------------
+     1. Color Ramps (OKLCH Tuned)
+     -------------------------------------------------------------------------- */
+  /* 1.1 Primary: Abyss Navy -> Deep Petrol */
+  --primary-50: #eef8fc;
+  --primary-100: #d8eef6;
+  --primary-200: #b5dbea;
+  --primary-300: #8ac1d6;
+  --primary-400: #5ba0ba;
+  --primary-500: #3384a0;
+  --primary-600: #126782; /* Deep Petrol anchor */
+  --primary-700: #0a536d;
+  --primary-800: #044059;
+  --primary-900: #023047; /* Abyss Navy anchor */
+  --primary-950: #001e30;
+
+  /* 1.2 Secondary: Signal Blue -> Mist Blue */
+  --secondary-50: #edf9fd;
+  --secondary-100: #d8f2fb;
+  --secondary-200: #b6e1f4;
+  --secondary-300: #8ecae6; /* Mist Blue anchor */
+  --secondary-400: #55b4d3;
+  --secondary-500: #219ebc; /* Signal Blue anchor */
+  --secondary-600: #0b839e;
+  --secondary-700: #006980;
+  --secondary-800: #005064;
+  --secondary-900: #023b4e;
+  --secondary-950: #022837;
+
+  /* 1.3 Accent: Bullion Gold -> Amber Gold */
+  --accent-50: #fffae8;
+  --accent-100: #fff2c6;
+  --accent-200: #ffe390;
+  --accent-300: #ffcd54;
+  --accent-400: #ffb703; /* Bullion Gold anchor (rest state) */
+  --accent-500: #fd9e02; /* Amber Gold anchor (hover state) */
+  --accent-600: #df8019; /* Pressed state */
+  --accent-700: #b76219;
+  --accent-800: #8d4917;
+  --accent-900: #683613;
+  --accent-950: #42220c;
+
+  /* 1.4 Neutral: Navy-tinted Slate (Hue 230; pure black is banned everywhere) */
+  --neutral-0: #ffffff;
+  --neutral-25: #f7fbfc;
+  --neutral-50: #f1f6f8;
+  --neutral-100: #e5ecf0;
+  --neutral-200: #d4dee3;
+  --neutral-300: #bdcad0;
+  --neutral-400: #83949d;
+  --neutral-500: #647680;
+  --neutral-600: #52636d;
+  --neutral-700: #394a55;
+  --neutral-800: #21333e;
+  --neutral-900: #11212c;
+  --neutral-950: #05131c;
+
+  /* 1.5 Semantic Feedback Ramps */
+  --success-50: #e8fdf3;
+  --success-100: #cdf6e3;
+  --success-200: #a0ebc7;
+  --success-300: #64d8a4;
+  --success-400: #2fc183;
+  --success-500: #0ca366;
+  --success-600: #0e8754;
+  --success-700: #0e6c43;
+  --success-800: #075235;
+  --success-900: #043a26;
+
+  --danger-50: #fff3f3;
+  --danger-100: #ffe3e1;
+  --danger-200: #ffc6c4;
+  --danger-300: #ff9f9e;
+  --danger-400: #f77170;
+  --danger-500: #e84545;
+  --danger-600: #c92f30;
+  --danger-700: #a52522;
+  --danger-800: #811e1b;
+  --danger-900: #5c1714;
+
+  /* 1.6 Dark Surface Ramp (elevation by lightness) */
+  --dark-sunken: #002337;
+  --dark-canvas: #023047;
+  --dark-hover: #07374f;
+  --dark-surface-1: #093b54;
+  --dark-pressed: #0f4159;
+  --dark-surface-2: #144660;
+  --dark-surface-3: #1d526c;
+  --dark-border-subtle: #214a61;
+  --dark-border-default: #315b72;
+  --dark-border-strong: #518097;
+
+  /* --------------------------------------------------------------------------
+     2. Spacing Tokens (4px Grid & Fibonacci x 4)
+     -------------------------------------------------------------------------- */
+  /* Component spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  /* Layout spacing (Fibonacci x 4) */
+  --gap-xs: 12px;
+  --gap-sm: 20px;
+  --gap-md: 32px;
+  --gap-lg: 52px;
+  --gap-xl: 84px;
+  --gap-2xl: 136px;
+
+  /* --------------------------------------------------------------------------
+     3. Golden Size Ladder (G(n) = 84 x φ^n)
+     -------------------------------------------------------------------------- */
+  --g-1: 84px; /* Collapsed sidebar, avatar-lg */
+  --g-2: 136px; /* KPI card height */
+  --g-3: 220px; /* Small card height, option cards */
+  --g-4: 356px; /* Listing card height, compact chart height */
+  --g-5: 576px; /* Main chart panel height, modal-md width */
+  --g-6: 932px; /* Reading max width, sheet max width */
+  --g-7: 1508px; /* Content max width on large displays */
+
+  --sidebar: 272px;
+  --sidebar-collapsed: 84px;
+  --topbar: 64px;
+  --nav-landing: 72px;
+  --container-landing: 1320px;
+
+  /* --------------------------------------------------------------------------
+     4. Radius Tokens (Fibonacci)
+     -------------------------------------------------------------------------- */
+  --radius-2xs: 3px;
+  --radius-xs: 5px;
+  --radius-sm: 8px; /* Buttons, inputs, selects */
+  --radius-md: 13px; /* Cards, panels, dropdowns */
+  --radius-lg: 21px; /* Modals, sheets */
+  --radius-full: 999px;
+
+  /* Control heights */
+  --h-sm: 32px;
+  --h-md: 40px;
+  --h-lg: 48px; /* Default */
+  --h-xl: 56px;
+
+  /* --------------------------------------------------------------------------
+     5. Typography Scale (sqrt(φ) = 1.272 steps)
+     -------------------------------------------------------------------------- */
+  /* "Montserrat Variable" is the family name registered by @fontsource-variable/montserrat */
+  --font-sans:
+    'Montserrat Variable', 'Montserrat', 'IBM Plex Sans Arabic', 'Plex Arabic Fallback', system-ui, -apple-system,
+    sans-serif;
+  --font-num: 'Montserrat Variable', 'Montserrat', sans-serif;
+
+  --fs-display-2xl: 5.375rem; /* 86px */
+  --fs-display-xl: 4.25rem; /* 68px */
+  --fs-display-lg: 3.3125rem; /* 53px */
+  --fs-h1: 2.625rem; /* 42px */
+  --fs-h2: 2.0625rem; /* 33px */
+  --fs-h3: 1.625rem; /* 26px */
+  --fs-h4: 1.25rem; /* 20px */
+  --fs-body: 1rem; /* 16px */
+  --fs-sm: 0.875rem; /* 14px */
+  --fs-xs: 0.8125rem; /* 13px (Latin only) */
+
+  /* --------------------------------------------------------------------------
+     6. Motion Tokens (Fibonacci durations in ms)
+     -------------------------------------------------------------------------- */
+  --dur-1: 80ms; /* Press feedback, icon swap */
+  --dur-2: 130ms; /* Hover color/border */
+  --dur-3: 210ms; /* Tooltip, dropdown, lift */
+  --dur-4: 340ms; /* Modals, sheets, tab indicator */
+  --dur-5: 550ms; /* Section reveal, tick flash */
+  --dur-6: 890ms; /* Hero entrance, logo loader, draw */
+  --dur-7: 1440ms; /* Ambient loops (pulse) */
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* --------------------------------------------------------------------------
+     7. Elevation (Navy-tinted, never black) & Z-Index
+     -------------------------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(2, 48, 71, 0.06);
+  --shadow-md: 0 4px 12px -2px rgba(2, 48, 71, 0.08), 0 2px 4px rgba(2, 48, 71, 0.04);
+  --shadow-lg: 0 12px 32px -8px rgba(2, 48, 71, 0.16), 0 4px 8px rgba(2, 48, 71, 0.06);
+  /* Landing hero price card, presented as a floating product preview (D19): navy-tinted */
+  --shadow-showcase: 0 32px 64px -24px rgba(2, 48, 71, 0.28), 0 12px 24px -12px rgba(2, 48, 71, 0.12);
+
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-header: 200;
+  --z-dropdown: 300;
+  --z-overlay: 400;
+  --z-modal: 500;
+  --z-toast: 600;
+  --z-tooltip: 700;
+
+  /* Brand Motifs */
+  --slant: 20deg;
+
+  /* Landing nav glass (06-style §4) and the hero wash (the one gradient, 01-color §8)
+     are set per theme below */
+}
+
+/* ----------------------------------------------------------------------------
+   Arabic Line Heights (Default Locale)
+   ---------------------------------------------------------------------------- */
+:root:lang(ar) {
+  --lh-display-2xl: 6.75rem; /* 108px */
+  --lh-display-xl: 5.5rem; /* 88px */
+  --lh-display-lg: 4.5rem; /* 72px */
+  --lh-h1: 3.75rem; /* 60px */
+  --lh-h2: 3rem; /* 48px */
+  --lh-h3: 2.5rem; /* 40px */
+  --lh-h4: 2.25rem; /* 36px */
+  --lh-body: 1.75rem; /* 28px (>= 1.75) */
+  --lh-sm: 1.5rem; /* 24px */
+}
+
+/* ----------------------------------------------------------------------------
+   Latin Line Heights
+   ---------------------------------------------------------------------------- */
+:root:lang(en) {
+  --lh-display-2xl: 5.75rem; /* 92px */
+  --lh-display-xl: 4.75rem; /* 76px */
+  --lh-display-lg: 3.75rem; /* 60px */
+  --lh-h1: 3rem; /* 48px */
+  --lh-h2: 2.5rem; /* 40px */
+  --lh-h3: 2.25rem; /* 36px */
+  --lh-h4: 2rem; /* 32px */
+  --lh-body: 1.625rem; /* 26px */
+  --lh-sm: 1.25rem; /* 20px */
+}
+
+/* ----------------------------------------------------------------------------
+   Semantic Themes: Light Theme
+   ---------------------------------------------------------------------------- */
+:root,
+[data-theme='light'] {
+  --bg-canvas: #ffffff;
+  --bg-subtle: #f7fbfc;
+  --bg-muted: #f1f6f8;
+  --bg-sunken: #f1f6f8;
+  --surface-1: #ffffff;
+  --surface-2: #ffffff;
+  --surface-3: #ffffff;
+  --surface-inverse: #023047;
+  --surface-brand: #023047;
+  --scrim: rgba(2, 48, 71, 0.56);
+
+  --text-primary: #023047;
+  --text-secondary: #394a55;
+  --text-tertiary: #52636d;
+  --text-placeholder: #647680;
+  --text-disabled: #83949d;
+  --text-inverse: #ffffff;
+  --text-link: #006980;
+  --text-link-hover: #005064;
+  --text-on-accent: #023047;
+  --text-on-brand: #ffffff;
+  --text-gold: #8d4917;
+
+  --border-subtle: #e5ecf0;
+  --border-default: #d4dee3;
+  --border-strong: #bdcad0;
+  --border-input: #83949d;
+  --border-input-hover: #52636d;
+  --border-focus: #219ebc;
+  --border-selected: #023047;
+  --border-danger: #c92f30;
+  --border-gold: #fd9e02;
+
+  --market-up: #0e6c43;
+  --market-down: #c92f30;
+  --market-flat: #52636d;
+  --market-up-bg: rgba(14, 135, 84, 0.1);
+  --market-down-bg: rgba(201, 47, 48, 0.08);
+
+  --state-hover: #f7fbfc;
+  --state-pressed: #f1f6f8;
+  --state-selected-bg: #edf9fd;
+  --state-selected-indicator: #023047;
+  --selection-bg: #b6e1f4;
+  --selection-text: #023047;
+
+  --skeleton-base: #e5ecf0;
+  --skeleton-highlight: #f1f6f8;
+
+  /* Feedback containers (01-color §6.1) */
+  --success-bg: #e8fdf3;
+  --success-border: #a0ebc7;
+  --success-fg: #075235;
+  --danger-bg: #fff3f3;
+  --danger-border: #ffc6c4;
+  --danger-fg: #a52522;
+  --warning-bg: #fffae8;
+  --warning-border: #ffe390;
+  --warning-fg: #8d4917;
+  --info-bg: #edf9fd;
+  --info-border: #b6e1f4;
+  --info-fg: #005064;
+
+  /* Buttons (01-color §5.5) */
+  --btn-accent-bg: #ffb703;
+  --btn-accent-hover: #fd9e02;
+  --btn-accent-pressed: #df8019;
+  --btn-accent-fg: #023047;
+  --btn-primary-bg: #023047;
+  --btn-primary-hover: #044059;
+  --btn-primary-pressed: #001e30;
+  --btn-primary-fg: #ffffff;
+  --btn-brand-bg: #126782;
+  --btn-brand-hover: #0a536d;
+  --btn-brand-pressed: #044059;
+  --btn-brand-fg: #ffffff;
+  --btn-danger-bg: #c92f30;
+  --btn-danger-hover: #a52522;
+  --btn-danger-pressed: #811e1b;
+  --btn-danger-fg: #ffffff;
+  --btn-disabled-bg: #d4dee3;
+  --btn-disabled-fg: #647680;
+
+  /* Charts (01-color §7) */
+  --chart-gold-line: #b76219;
+  --chart-gold-area: rgba(253, 158, 2, 0.1);
+  --chart-grid: #e5ecf0;
+  --chart-axis: #52636d;
+  --chart-crosshair: #647680;
+  --chart-tag-bg: #b76219;
+  --chart-tag-fg: #ffffff;
+
+  /* Categorical karat order (01-color §7) */
+  --karat-24: #b76219;
+  --karat-22: #006980;
+  --karat-21: #126782;
+  --karat-18: #52636d;
+
+  /* Logo on the page canvas: Navy (Version 1) on light (05-logo §2) */
+  --logo-on-canvas: #023047;
+
+  /* Landing on the light canvas (D17): white glass nav, pale mist wash */
+  --landing-nav-glass: rgba(255, 255, 255, 0.88);
+  --bg-wash-hero: radial-gradient(120% 80% at 85% 0%, #d8eef6 0%, #ffffff 60%);
+
+  /* Sidebar: navy in light theme (04-layout §9); solid text colors, no alpha text */
+  --sidebar-bg: #023047;
+  --sidebar-hover: #044059;
+  --sidebar-active: #0a536d;
+  --sidebar-border: #0a536d;
+  --sidebar-fg: #ffffff;
+  --sidebar-fg-muted: #b5dbea;
+
+  color-scheme: light;
+}
+
+/* ----------------------------------------------------------------------------
+   Semantic Themes: Dark Theme (Canvas = Abyss Navy #023047)
+   ---------------------------------------------------------------------------- */
+[data-theme='dark'] {
+  --bg-canvas: #023047;
+  --bg-subtle: #002337;
+  --bg-muted: #093b54;
+  --bg-sunken: #002337;
+  --surface-1: #093b54;
+  --surface-2: #144660;
+  --surface-3: #1d526c;
+  --surface-inverse: #ffffff;
+  --surface-brand: #126782;
+  --scrim: rgba(0, 20, 32, 0.72);
+
+  --text-primary: #ffffff;
+  --text-secondary: #d8eef6;
+  --text-tertiary: #a2cbdd;
+  --text-placeholder: #a2cbdd;
+  --text-disabled: #5ba0ba;
+  --text-inverse: #023047;
+  --text-link: #8ecae6;
+  --text-link-hover: #b6e1f4;
+  --text-on-accent: #023047;
+  --text-on-brand: #ffffff;
+  --text-gold: #ffb703;
+
+  --border-subtle: #214a61;
+  --border-default: #315b72;
+  --border-strong: #518097;
+  --border-input: #518097;
+  --border-input-hover: #8ac1d6;
+  --border-focus: #55b4d3;
+  --border-selected: #8ecae6;
+  --border-danger: #f77170;
+  --border-gold: #ffb703;
+
+  --market-up: #64d8a4;
+  --market-down: #ff9f9e;
+  --market-flat: #a2cbdd;
+  --market-up-bg: rgba(47, 193, 131, 0.14);
+  --market-down-bg: rgba(247, 113, 112, 0.14);
+
+  --state-hover: #07374f;
+  --state-pressed: #0f4159;
+  --state-selected-bg: #144660;
+  --state-selected-indicator: #8ecae6;
+  --selection-bg: #126782;
+  --selection-text: #ffffff;
+
+  --skeleton-base: #093b54;
+  --skeleton-highlight: #144660;
+
+  /* Feedback containers (01-color §6.1) */
+  --success-bg: rgba(47, 193, 131, 0.12);
+  --success-border: rgba(47, 193, 131, 0.32);
+  --success-fg: #64d8a4;
+  --danger-bg: rgba(247, 113, 112, 0.12);
+  --danger-border: rgba(247, 113, 112, 0.32);
+  --danger-fg: #ff9f9e;
+  --warning-bg: rgba(255, 183, 3, 0.1);
+  --warning-border: rgba(255, 183, 3, 0.3);
+  --warning-fg: #ffcd54;
+  --info-bg: rgba(33, 158, 188, 0.12);
+  --info-border: rgba(33, 158, 188, 0.32);
+  --info-fg: #8ecae6;
+
+  /* Buttons (01-color §5.5) */
+  --btn-primary-bg: #8ecae6;
+  --btn-primary-hover: #b6e1f4;
+  --btn-primary-pressed: #55b4d3;
+  --btn-primary-fg: #023047;
+  --btn-danger-bg: #f77170;
+  --btn-danger-hover: #ff9f9e;
+  --btn-danger-pressed: #e84545;
+  --btn-danger-fg: #023047;
+  --btn-disabled-bg: #144660;
+  --btn-disabled-fg: #5ba0ba;
+
+  /* Charts (01-color §7) */
+  --chart-gold-line: #ffb703;
+  --chart-gold-area: rgba(255, 183, 3, 0.1);
+  --chart-grid: #214a61;
+  --chart-axis: #a2cbdd;
+  --chart-crosshair: #8ac1d6;
+  --chart-tag-bg: #ffb703;
+  --chart-tag-fg: #023047;
+
+  /* Categorical karat order (01-color §7) */
+  --karat-24: #ffb703;
+  --karat-22: #55b4d3;
+  --karat-21: #8ac1d6;
+  --karat-18: #bdcad0;
+
+  /* Logo on the page canvas: White on navy (05-logo §2) */
+  --logo-on-canvas: #ffffff;
+
+  --landing-nav-glass: rgba(2, 48, 71, 0.88);
+  --bg-wash-hero: radial-gradient(120% 80% at 85% 0%, #0a3d57 0%, #023047 60%);
+
+  /* Sidebar: dark-surface-1 in dark theme (04-layout §9) */
+  --sidebar-bg: #093b54;
+  --sidebar-hover: #144660;
+  --sidebar-active: #1d526c;
+  --sidebar-border: #214a61;
+  --sidebar-fg: #ffffff;
+  --sidebar-fg-muted: #d8eef6;
+
+  /* Dark depth = lighter surfaces; only floating layers keep a shadow (04-layout §11) */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: 0 16px 48px -12px rgba(0, 20, 32, 0.6);
+  --shadow-showcase: 0 32px 64px -24px rgba(0, 20, 32, 0.7), 0 12px 24px -12px rgba(0, 20, 32, 0.4);
+
+  color-scheme: dark;
+}
