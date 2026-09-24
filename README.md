@@ -68,3 +68,20 @@ npm run build
 - `npm run qa` runs the UI Kit automated gates (hex only in `tokens.css`, no gradients, no dashes, no arbitrary Tailwind values, Phosphor weights and sizes, and so on).
 - Styling uses Kit tokens only: `src/styles/tokens.css` (values) mapped to Tailwind utilities in `src/styles/tailwind.css`.
 - UI copy lives in `src/i18n/ar.ts`.
+
+GitHub Actions (`.github/workflows/ci.yml`) runs `npm run check`, a production build and the E2E suite on every push to `main` and every pull request.
+
+## Deploy (Vercel + Railway)
+
+The frontend deploys on Vercel from this repository; `vercel.json` sets the Vite build, the SPA fallback (every route serves `index.html`, so deep links like `/app/market` work) and long caching for hashed assets. Every push to `main` redeploys.
+
+Environment variables (Vercel → Project → Settings → Environment Variables):
+
+| Variable | Value |
+|---|---|
+| `VITE_API_URL` | The Railway backend URL, e.g. `https://<service>.up.railway.app` (no trailing `/api`) |
+| `VITE_USE_MOCK` | Leave unset. `true` only for a demo deploy with no backend (demo data, quick-login buttons shown) |
+
+A production build refuses to start without `VITE_API_URL` unless `VITE_USE_MOCK=true`, so a misconfigured deploy fails loudly instead of calling `localhost` from visitors' browsers. `VITE_*` values are baked in at build time: after changing one, redeploy.
+
+On the backend (Railway), `CORS_ORIGINS` must list the Vercel domain (e.g. `https://<project>.vercel.app`), or the browser blocks every API call.
