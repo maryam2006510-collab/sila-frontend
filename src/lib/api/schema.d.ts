@@ -405,6 +405,8 @@ export interface components {
     CommissionTier: {
       /** Label */
       label: string;
+      /** Label Ar */
+      label_ar: string;
       /** Min Grams */
       min_grams: string | null;
       /** Max Grams */

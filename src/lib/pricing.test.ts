@@ -16,9 +16,9 @@ import type { CommissionTier, MarketPrices, Transaction } from './types';
 
 // The server's tiers, as adapted from /api/config
 const TIERS: CommissionTier[] = [
-  { label: '< 50 g', min_grams: null, max_grams: 49.999, rate: 0.015 },
-  { label: '50-200 g', min_grams: 50, max_grams: 200, rate: 0.01 },
-  { label: '> 200 g', min_grams: 200.001, max_grams: null, rate: 0.005 },
+  { label: '< 50 g', label_ar: 'أقل من 50 غ', min_grams: null, max_grams: 49.999, rate: 0.015 },
+  { label: '50-200 g', label_ar: 'من 50 إلى 200 غ', min_grams: 50, max_grams: 200, rate: 0.01 },
+  { label: '> 200 g', label_ar: 'أكثر من 200 غ', min_grams: 200.001, max_grams: null, rate: 0.005 },
 ];
 
 const PRICES: MarketPrices = {

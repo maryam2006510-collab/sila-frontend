@@ -136,8 +136,8 @@ describe('incoming values', () => {
       currency: 'IQD',
       supported_karats: [24, 22, 21, 18],
       commission_tiers: [
-        { label: '< 50 g', min_grams: null, max_grams: '49.999', rate: '0.0150' },
-        { label: '> 200 g', min_grams: '200.001', max_grams: null, rate: '0.0050' },
+        { label: '< 50 g', label_ar: 'أقل من 50 غ', min_grams: null, max_grams: '49.999', rate: '0.0150' },
+        { label: '> 200 g', label_ar: 'أكثر من 200 غ', min_grams: '200.001', max_grams: null, rate: '0.0050' },
       ],
       promotion_fee_iqd: '25000',
       promotion_duration_days: 7,
@@ -145,7 +145,13 @@ describe('incoming values', () => {
       subscription_duration_days: 30,
       quote_ttl_seconds: 60,
     });
-    expect(c.commission_tiers[0]).toEqual({ label: '< 50 g', min_grams: null, max_grams: 49.999, rate: 0.015 });
+    expect(c.commission_tiers[0]).toEqual({
+      label: '< 50 g',
+      label_ar: 'أقل من 50 غ',
+      min_grams: null,
+      max_grams: 49.999,
+      rate: 0.015,
+    });
     expect(c.promotion_fee_iqd).toBe(25_000);
   });
 });

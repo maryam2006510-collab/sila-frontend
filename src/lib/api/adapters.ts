@@ -253,6 +253,7 @@ export const toServerConfig = (c: W.PublicConfigOut): ServerConfig => ({
   supported_karats: c.supported_karats.map(karat),
   commission_tiers: c.commission_tiers.map((tier) => ({
     label: tier.label,
+    label_ar: tier.label_ar,
     min_grams: numOrNull(tier.min_grams),
     max_grams: numOrNull(tier.max_grams),
     rate: num(tier.rate),

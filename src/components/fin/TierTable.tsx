@@ -37,7 +37,8 @@ export const TierTable: React.FC<TierTableProps> = ({ currentWeight, className =
                     isActive ? 'bg-state-selected text-fg font-semibold' : 'text-fg-muted'
                   }`}
                 >
-                  <span>{tierLabel(tier, t)}</span>
+                  {/* label_ar comes from the server; a backend without it falls back to the bounds */}
+                  <span>{tier.label_ar || tierLabel(tier, t)}</span>
                   <span className="flex items-center gap-2">
                     {isActive && (
                       <span className="h-6 px-2 inline-flex items-center rounded-xs text-sm font-medium border border-line-strong text-fg">

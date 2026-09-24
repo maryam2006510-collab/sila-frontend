@@ -238,6 +238,8 @@ export interface SubscriptionStatus {
 
 export interface CommissionTier {
   label: string;
+  // Arabic display text from the server (e.g. "أقل من 50 غ")
+  label_ar: string;
   // Inclusive bounds in grams; null = open-ended
   min_grams: number | null;
   max_grams: number | null;
