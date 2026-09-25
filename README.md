@@ -84,4 +84,4 @@ Environment variables (Vercel → Project → Settings → Environment Variables
 
 A production build refuses to start without `VITE_API_URL` unless `VITE_USE_MOCK=true`, so a misconfigured deploy fails loudly instead of calling `localhost` from visitors' browsers. `VITE_*` values are baked in at build time: after changing one, redeploy.
 
-On the backend (Railway), `CORS_ORIGINS` must list the Vercel domain (e.g. `https://<project>.vercel.app`), or the browser blocks every API call.
+On the BACKEND (Railway), `CORS_ORIGINS` must list the Vercel domain (e.g. `https://<project>.vercel.app`), or the browser blocks every API call.
