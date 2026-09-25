@@ -565,6 +565,9 @@ export const ar = {
         { title: 'ترويج عند الحاجة', body: 'اظهر أولاً في نتائج السوق مقابل رسم ثابت ومدة واضحة.' },
       ],
       cta: 'سجّل كبائع',
+      // Shown when the market has no listing yet: an example card at the live price
+      exampleSeller: 'بائع موثّق',
+      exampleNote: 'مثال توضيحي بسعر السوق الحالي.',
     },
     premium: {
       title: 'رؤى Premium لمن يريد أكثر',
