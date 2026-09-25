@@ -14,7 +14,11 @@ const FACT_ICONS = [ScalesIcon, SealCheckIcon, MegaphoneIcon];
 export const ForSellers: React.FC = () => {
   const t = useT();
   // A real listing from the market (GET /api/listings is public), promoted ones first
-  const showcase = useListings({ sort: 'promoted_first' }, 1).data?.pages[0]?.items[0];
+  const listings = useListings({ sort: 'promoted_first' }, 1);
+  const showcase = listings.data?.pages[0]?.items[0];
+  // An empty market (or a failed request) drops the card column instead of leaving a
+  // placeholder that never resolves; the facts then take the full width
+  const showCard = listings.isPending || showcase !== undefined;
   const s = t.landing.sellers;
 
   return (
@@ -23,7 +27,7 @@ export const ForSellers: React.FC = () => {
       aria-label={s.title}
       className="landing-anchor cv-auto container-landing px-5 md:px-8 xl:px-13 py-21 lg:py-34"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-golden gap-13 items-center">
+      <div className={`grid grid-cols-1 gap-13 items-center ${showCard ? 'lg:grid-cols-golden' : ''}`}>
         <div className="flex flex-col gap-8">
           <h2 data-reveal className="m-0 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">
             {noOrphan(s.title)}
@@ -48,13 +52,15 @@ export const ForSellers: React.FC = () => {
         </div>
 
         {/* The same card investors see in the market, with a live listing, not an illustration */}
-        <div data-reveal-block className="justify-self-center w-full max-w-g4" inert aria-hidden="true">
-          {showcase ? (
-            <ListingCard listing={showcase} demo />
-          ) : (
-            <div className="h-g4 rounded-md skeleton-loading" aria-hidden="true" />
-          )}
-        </div>
+        {showCard && (
+          <div data-reveal-block className="justify-self-center w-full max-w-g4" inert aria-hidden="true">
+            {showcase ? (
+              <ListingCard listing={showcase} demo />
+            ) : (
+              <div className="h-g4 rounded-md skeleton-loading" aria-hidden="true" />
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
