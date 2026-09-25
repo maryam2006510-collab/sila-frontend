@@ -1,8 +1,10 @@
 // src/features/shell/AppLayout.tsx
 // Core App Shell Wrapper per UI Kit 04-layout §9
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { prefetchAppRoutes } from '@/app/router';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import * as m from 'motion/react-m';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { MobileTabBar } from './MobileTabBar';
@@ -14,6 +16,7 @@ import { toast } from '@/components/ui/toastStore';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { useMe, useMarketPrices } from '@/lib/queries';
 import { DEMO_ACCOUNTS, DEMO_PASSWORD, SHOW_DEMO_ACCOUNTS } from '@/lib/demoAccounts';
+import { transition } from '@/motion/tokens';
 import { useT } from '@/i18n';
 import { AppOutletContext } from './appContext';
 
@@ -66,6 +69,9 @@ export const AppLayout: React.FC = () => {
 
   const prices = pricesQuery.data;
 
+  // The role's other pages load in the background once this one is up (D35)
+  useEffect(() => prefetchAppRoutes(user.role), [user.role]);
+
   return (
     <div className="min-h-screen bg-canvas text-fg flex">
       {/* First Tab stop: jump past the sidebar and topbar straight to the page (WCAG 2.4.1) */}
@@ -88,7 +94,17 @@ export const AppLayout: React.FC = () => {
           className="flex-1 w-full max-w-g7 mx-auto px-5 md:px-8 xl:px-13 py-8 outline-none"
         >
           {prices ? (
-            <Outlet context={{ user, prices } satisfies AppOutletContext} />
+            // Route change (07-motion §3 #3, D31): the page fades in (opacity only, so fixed children
+            // keep the viewport as their box) while its sections rise in sequence (.page-stagger)
+            <m.div
+              key={location.pathname}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={transition.page}
+              className="page-stagger"
+            >
+              <Outlet context={{ user, prices } satisfies AppOutletContext} />
+            </m.div>
           ) : pricesQuery.isError ? (
             <ErrorState message={t.shell.pricesFailed} onRetry={() => pricesQuery.refetch()} />
           ) : (

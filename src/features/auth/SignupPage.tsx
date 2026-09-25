@@ -2,7 +2,8 @@
 // Sign up form per UI Kit 08-ux-user-flows.md §4 Screen 1.2 (workflow 01, step 2)
 // Client rules mirror the server's Pydantic schema; the server still decides.
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { prefetchAppShell } from '@/app/router';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { useForm, useWatch, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -44,6 +45,8 @@ const RISK_OPTIONS: RiskProfile[] = ['low', 'medium', 'high'];
 
 export const SignupPage: React.FC = () => {
   const t = useT();
+  // The dashboard shell downloads while the form is being filled in (D35)
+  useEffect(prefetchAppShell, []);
   const { role } = useParams<{ role: string }>();
   const navigate = useNavigate();
   const mirrored = useMirrored();

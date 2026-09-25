@@ -6,6 +6,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import { useGSAP } from '@gsap/react';
+import { gsapT } from '@/motion/tokens';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
 ScrollTrigger.config({ ignoreMobileResize: true });
@@ -23,14 +24,7 @@ export const MQ = {
   reduce: '(prefers-reduced-motion: reduce)',
 } as const;
 
-// Durations/eases from the motion tokens (07-motion §2)
-export const T = {
-  dur4: 0.34,
-  dur5: 0.55,
-  dur6: 0.89,
-  stagger: 0.055,
-  heroStagger: 0.089,
-  scrub: 0.8,
-} as const;
+// Durations/eases from the motion tokens (07-motion §2), in seconds
+export const T = gsapT;
 
 export { gsap, ScrollTrigger, SplitText, useGSAP };

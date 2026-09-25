@@ -16,13 +16,15 @@ export const Faq: React.FC = () => {
     <section
       id="faq"
       aria-label={f.title}
-      className="landing-anchor container-landing px-5 md:px-8 xl:px-13 py-21 lg:py-34"
+      className="landing-anchor cv-auto container-landing px-5 md:px-8 xl:px-13 py-21 lg:py-34"
     >
       <div className="max-w-g6 flex flex-col gap-8">
-        <h2 className="m-0 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">{noOrphan(f.title)}</h2>
+        <h2 data-reveal className="m-0 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">
+          {noOrphan(f.title)}
+        </h2>
         <div className="flex flex-col border-t border-line">
           {f.items.map((item) => (
-            <details key={item.q} name="faq" className="group border-b border-line">
+            <details data-reveal-item key={item.q} name="faq" className="group border-b border-line">
               <summary className="list-none flex items-center justify-between gap-5 min-h-16 py-3 cursor-pointer text-h4 font-semibold text-fg outline-none focus-visible:ring-3 focus-visible:ring-line-focus/35 rounded-xs">
                 {item.q}
                 <CaretDownIcon

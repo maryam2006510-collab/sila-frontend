@@ -124,7 +124,8 @@ export const SecurityLayers: React.FC = () => {
   const s = t.landing.security;
   const isRtl = useDirection() === 'rtl';
   const wrapRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLOListElement>(null);
+  const total = s.panels.length;
 
   useGSAP(
     () => {
@@ -132,9 +133,9 @@ export const SecurityLayers: React.FC = () => {
       mm.add(MQ.tablet, () => {
         const track = trackRef.current!;
         const distance = () => Math.max(0, track.scrollWidth - window.innerWidth);
-        gsap.to(track, {
-          x: () => (isRtl ? distance() : -distance()),
-          ease: 'none',
+        // One linear timeline: the track pans and the progress rail fills from the reading edge
+        const pan = gsap.timeline({
+          defaults: { ease: 'none' },
           scrollTrigger: {
             trigger: wrapRef.current,
             start: 'top top',
@@ -145,6 +146,33 @@ export const SecurityLayers: React.FC = () => {
             invalidateOnRefresh: true,
           },
         });
+        pan
+          .to(track, { x: () => (isRtl ? distance() : -distance()) })
+          .fromTo(
+            '[data-pan-fill]',
+            { scaleX: 0 },
+            { scaleX: 1, transformOrigin: isRtl ? 'right center' : 'left center' },
+            0
+          );
+        // Small parallax on each icon tile as its card crosses the screen (07-motion §4.5, max 24px)
+        gsap.utils.toArray<HTMLElement>('[data-panel-tile]').forEach((tile) => {
+          gsap.fromTo(
+            tile,
+            { x: isRtl ? -24 : 24 },
+            {
+              x: 0,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: tile,
+                containerAnimation: pan,
+                // RTL pans rightward, so cards enter from the left edge
+                start: isRtl ? 'right left' : 'left right',
+                end: isRtl ? 'right center' : 'left center',
+                scrub: true,
+              },
+            }
+          );
+        });
       });
       return () => mm.revert();
     },
@@ -153,34 +181,55 @@ export const SecurityLayers: React.FC = () => {
 
   return (
     <section id="security" aria-label={s.title} className="landing-anchor overflow-x-clip">
-      <div ref={wrapRef} className="md:motion-safe:h-svh flex flex-col justify-center gap-13 py-21">
-        <div className="container-landing w-full px-5 md:px-8 xl:px-13">
-          <h2 className="m-0 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">{noOrphan(s.title)}</h2>
+      <div ref={wrapRef} className="md:motion-safe:h-svh flex flex-col justify-center gap-8 md:gap-13 py-21">
+        <div className="container-landing w-full px-5 md:px-8 xl:px-13 flex items-end justify-between gap-8">
+          <h2 data-reveal className="m-0 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">
+            {noOrphan(s.title)}
+          </h2>
+          {/* Pan progress: only where the section pans (tablet and up, motion allowed) */}
+          <span className="hidden md:motion-safe:flex items-center gap-3 shrink-0 pb-3" aria-hidden="true">
+            <bdi className="num text-sm font-semibold text-fg-subtle">01</bdi>
+            <span className="relative h-1 w-32 sila-cut bg-line overflow-hidden">
+              <span data-pan-fill className="absolute inset-0 bg-state-indicator" />
+            </span>
+            <bdi className="num text-sm font-semibold text-fg-subtle">0{total}</bdi>
+          </span>
         </div>
 
-        <div className="overflow-x-auto md:motion-safe:overflow-visible snap-x snap-mandatory scroll-px-5">
-          <div ref={trackRef} className="flex gap-5 md:gap-8 w-max px-5 md:px-8 xl:px-13">
+        <div className="overflow-x-auto md:motion-safe:overflow-visible snap-x snap-mandatory scroll-px-5 no-scrollbar">
+          <ol ref={trackRef} className="m-0 list-none flex gap-4 md:gap-5 w-max track-inset">
             {s.panels.map((panel, i) => {
               const PanelIcon = ICONS[i];
               const Visual = VISUALS[i];
               return (
-                <article
+                <li
                   key={panel.title}
-                  className="snap-start shrink-0 w-carousel md:w-g5 md:h-g5 rounded-lg bg-surface-1 border border-line p-8 flex flex-col justify-between gap-8"
+                  className="snap-start shrink-0 w-carousel md:w-100 md:h-115 rounded-md bg-surface-1 border border-line p-5 md:p-6 flex flex-col gap-5"
                 >
-                  {/* Icon tile with the Sila Cut on its inline-end top corner (03-icon §8, 06-style §3.1) */}
-                  <span className="size-21 inline-flex items-center justify-center rounded-md bg-muted border border-line-subtle text-fg sila-cut">
-                    <PanelIcon size={52} aria-hidden="true" />
-                  </span>
-                  <div className="flex flex-col gap-3">
-                    <h3 className="m-0 text-h3 font-semibold text-fg">{noOrphan(panel.title)}</h3>
-                    <p className="m-0 text-h4 font-normal text-fg-muted">{panel.body}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    {/* Icon tile with the Sila Cut on its inline-end top corner (03-icon §8, 06-style §3.1) */}
+                    <span
+                      data-panel-tile
+                      className="size-13 inline-flex items-center justify-center rounded-sm bg-muted border border-line-subtle text-fg sila-cut"
+                    >
+                      <PanelIcon size={24} aria-hidden="true" />
+                    </span>
+                    <bdi className="num text-sm font-semibold text-fg-subtle" aria-hidden="true">
+                      0{i + 1} / 0{total}
+                    </bdi>
                   </div>
-                  <Visual />
-                </article>
+                  <div className="flex-1 flex flex-col gap-2">
+                    <h3 className="m-0 text-h4 font-semibold text-fg">{noOrphan(panel.title)}</h3>
+                    <p className="m-0 text-body text-fg-muted">{panel.body}</p>
+                  </div>
+                  {/* Every visual sits in the same well, so the five cards line up edge to edge */}
+                  <div className="h-44 shrink-0 rounded-sm bg-subtle border border-line-subtle p-4 flex flex-col justify-center">
+                    <Visual />
+                  </div>
+                </li>
               );
             })}
-          </div>
+          </ol>
         </div>
       </div>
     </section>

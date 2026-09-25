@@ -42,11 +42,13 @@ export const Logo: React.FC<LogoProps> = ({
   // Full logo 3:1 (1320×440), icon 1:1 (441×440)
   const width = variant === 'full' ? height * 3 : height;
 
+  // Block-level flex, never inline: an inline box sits on the text baseline and rides ~4px above
+  // the centre of a nav row (D29)
   const mark = (
     <span
       role="img"
       aria-label={label}
-      className={`inline-flex shrink-0 select-none ${toneClass[tone]} ${className}`}
+      className={`flex shrink-0 select-none ${toneClass[tone]} ${className}`}
       style={{ width, height }}
       dangerouslySetInnerHTML={variant === 'full' ? LOGO_MARKUP : ICON_MARKUP}
     />
@@ -58,7 +60,7 @@ export const Logo: React.FC<LogoProps> = ({
     <Link
       to="/"
       aria-label={label}
-      className="inline-flex items-center rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-line-focus/35"
+      className="flex w-fit shrink-0 items-center rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-line-focus/35"
     >
       {mark}
     </Link>

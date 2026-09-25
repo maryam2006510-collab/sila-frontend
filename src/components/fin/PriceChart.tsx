@@ -5,6 +5,7 @@
 import React, { useEffect, useRef } from 'react';
 import { createChart, AreaSeries, ColorType, LineStyle, IChartApi, ISeriesApi, UTCTimestamp } from 'lightweight-charts';
 import { useThemeStore } from '@/app/theme';
+import { useInViewOnce } from '@/lib/hooks';
 import { fmtDateTime, fmtIQD } from '@/lib/formatters';
 import { useT } from '@/i18n';
 
@@ -14,7 +15,7 @@ export interface PricePoint {
   value: number;
 }
 
-interface PriceChartProps {
+export interface PriceChartProps {
   data: PricePoint[];
   // Fixed height in px; omit to fill the parent (parent must have a definite height)
   height?: number;
@@ -43,11 +44,14 @@ export const PriceChart: React.FC<PriceChartProps> = ({
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
   const theme = useThemeStore((s) => s.theme);
+  // Built when it first comes near the screen: creating a chart is the costliest single step of a
+  // page load (~350ms on a mid-range phone), and below the fold it can wait (D35)
+  const near = useInViewOnce(containerRef, { rootMargin: '300px 0px' });
 
   // Create once per theme; data updates go through setData (no remount per tick)
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    if (!el || !near) return;
 
     const line = readToken(el, '--chart-gold-line');
     const area = readToken(el, '--chart-gold-area');
@@ -98,14 +102,14 @@ export const PriceChart: React.FC<PriceChartProps> = ({
       seriesRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [height, theme, compact]);
+  }, [height, theme, compact, near]);
 
   useEffect(() => {
     if (!seriesRef.current || !chartRef.current) return;
     const sorted = [...data].sort((a, b) => a.time - b.time);
     seriesRef.current.setData(sorted.map((p) => ({ time: p.time as UTCTimestamp, value: p.value })));
     chartRef.current.timeScale().fitContent();
-  }, [data, theme]);
+  }, [data, theme, near]);
 
   return (
     <figure className={`relative w-full m-0 ${height ? '' : 'h-full'} ${className}`} dir="ltr">

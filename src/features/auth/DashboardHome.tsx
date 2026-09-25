@@ -78,7 +78,7 @@ const InvestorDashboard: React.FC<{ user: User; prices: MarketPrices }> = ({ use
       <div className="grid grid-cols-1 lg:grid-cols-golden gap-5 lg:gap-8">
         <LivePricePanel prices={prices} />
 
-        <Card height="listing" padding="normal" className="gap-5">
+        <Card height="listing" stackedHeight="auto" padding="normal" className="gap-5">
           <div className="flex items-start gap-3">
             <span className="size-12 shrink-0 inline-flex items-center justify-center rounded-md bg-muted border border-line-subtle text-fg-muted">
               <TargetIcon size={24} aria-hidden="true" />
@@ -121,14 +121,14 @@ const InvestorDashboard: React.FC<{ user: User; prices: MarketPrices }> = ({ use
           label={d.kpiGrams}
           icon={CoinsIcon}
           status={dataStatus(ownershipQuery)}
-          value={<Num value={grams} format="grams" standalone />}
+          value={<Num value={grams} format="grams" standalone countUp />}
           deltaLabel={grams > 0 ? d.kpiGramsSigned : d.kpiGramsEmpty}
         />
         <KpiCard
           label={d.kpiValue}
           icon={WalletIcon}
           status={dataStatus(txQuery)}
-          value={<Num value={value} format="iqd" standalone />}
+          value={<Num value={value} format="iqd" standalone countUp />}
           deltaPct={value > 0 && prices.change_24h_pct !== null ? prices.change_24h_pct : undefined}
           deltaLabel={value > 0 ? t.kpi.sinceYesterday : d.kpiValueEmpty}
         />
@@ -136,7 +136,7 @@ const InvestorDashboard: React.FC<{ user: User; prices: MarketPrices }> = ({ use
           label={d.kpiTransactions}
           icon={ClockCounterClockwiseIcon}
           status={dataStatus(txQuery)}
-          value={<Num value={transactions.length} format="plain" standalone />}
+          value={<Num value={transactions.length} format="plain" standalone countUp />}
           deltaLabel={d.kpiTransactionsHelper}
         />
         <KpiCard
@@ -221,7 +221,7 @@ const InvestorDashboard: React.FC<{ user: User; prices: MarketPrices }> = ({ use
               ) : txQuery.isPending ? (
                 <div className="h-g4 rounded-md skeleton-loading" aria-hidden="true" />
               ) : (
-                <Card height="listing" padding="compact" className="overflow-y-auto">
+                <Card height="listing" stackedHeight="auto" padding="compact" className="overflow-y-auto">
                   {transactions.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center gap-3 text-center">
                       <p className="m-0 text-body text-fg-subtle">{d.noTransactions}</p>
@@ -316,20 +316,20 @@ const SellerDashboard: React.FC<{ prices: MarketPrices }> = ({ prices }) => {
           label={d.kpiGramsSold}
           icon={ScalesIcon}
           status={dataStatus(salesQuery)}
-          value={<Num value={gramsSold} format="grams" standalone />}
+          value={<Num value={gramsSold} format="grams" standalone countUp />}
         />
         <KpiCard
           label={d.kpiReceived}
           icon={ReceiptIcon}
           status={dataStatus(salesQuery)}
-          value={<Num value={received} format="iqd" standalone />}
+          value={<Num value={received} format="iqd" standalone countUp />}
           deltaLabel={d.kpiReceivedHelper}
         />
-        <KpiCard label={d.kpiActive} icon={TagIcon} value={<Num value={active} format="plain" standalone />} />
+        <KpiCard label={d.kpiActive} icon={TagIcon} value={<Num value={active} format="plain" standalone countUp />} />
         <KpiCard
           label={d.kpiPromoted}
           icon={MegaphoneIcon}
-          value={<Num value={promoted} format="plain" standalone />}
+          value={<Num value={promoted} format="plain" standalone countUp />}
         />
       </div>
 

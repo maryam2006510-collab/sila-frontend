@@ -75,13 +75,13 @@ export const PremiumPage: React.FC = () => {
 
   return (
     <div className="mx-auto w-full max-w-g6 flex flex-col gap-5">
-      <Card height="listing" padding="spacious" isGoldBorder className="justify-between">
-        <div className="flex items-start justify-between gap-3">
+      <Card height="listing" stackedHeight="auto" padding="spacious" isGoldBorder className="justify-between gap-8">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <CrownIcon size={32} className="text-fg-gold" aria-hidden="true" />
-            <h1 className="text-h3 font-semibold text-fg m-0">{t.shell.nav.premium}</h1>
+            <h1 className="text-h3 font-semibold text-fg m-0 whitespace-nowrap">{t.shell.nav.premium}</h1>
           </div>
-          <p className="m-0 text-end">
+          <p className="m-0 sm:text-end">
             <span className="text-h3 font-semibold text-fg">
               {price === undefined ? (
                 <span className="inline-block h-4 w-16 align-middle rounded-xs skeleton-loading" aria-hidden="true" />

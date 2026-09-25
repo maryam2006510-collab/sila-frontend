@@ -93,15 +93,19 @@ export const PricingCalculator: React.FC = () => {
       className="landing-anchor container-landing px-5 md:px-8 xl:px-13 py-21 lg:py-34"
     >
       <div className="flex flex-col gap-3 mb-13">
-        <h2 className="m-0 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">{noOrphan(p.title)}</h2>
-        <p className="m-0 max-w-128 text-h4 font-normal text-fg-muted">{noOrphan(p.body)}</p>
+        <h2 data-reveal className="m-0 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">
+          {noOrphan(p.title)}
+        </h2>
+        <p data-reveal-block className="m-0 max-w-128 text-h4 font-normal text-fg-muted">
+          {noOrphan(p.body)}
+        </p>
       </div>
 
       {/* Both columns share one top and one bottom edge: the bars box absorbs the difference */}
       {/* Calculator first (inline-start, 1.618fr), the visual + tiers after it (1fr) */}
       <div className="grid grid-cols-1 lg:grid-cols-golden gap-13 items-stretch">
         {/* 1fr: the visual + public tiers */}
-        <div className="flex flex-col gap-8 order-2">
+        <div data-reveal-item className="flex flex-col gap-8 order-2">
           <div
             ref={stackRef}
             role="img"
@@ -118,7 +122,7 @@ export const PricingCalculator: React.FC = () => {
         </div>
 
         {/* 1.618fr: the calculator */}
-        <div className="flex flex-col order-1">
+        <div data-reveal-item className="flex flex-col order-1">
           <div className="flex-1 flex flex-col gap-5 rounded-md bg-surface-1 border border-line p-5 md:p-8">
             <div className="flex flex-col gap-2">
               <span className="text-sm font-medium text-fg-muted">{p.karat}</span>

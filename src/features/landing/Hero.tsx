@@ -4,14 +4,13 @@
 // Copy positions Sila as a real-assets platform that starts with gold: an eyebrow, the asset
 // roadmap (gold now, real estate and oil soon) and a trust line under the CTA.
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { BuildingsIcon, CoinsIcon, DropIcon, Icon } from '@phosphor-icons/react';
 import { ButtonLink } from '@/components/ui/Button';
 import { LivePricePanel } from '@/components/fin/LivePricePanel';
 import { useMarketPrices } from '@/lib/queries';
 import { noOrphan } from '@/lib/noOrphan';
 import { useT } from '@/i18n';
-import { gsap, SplitText, useGSAP, T } from './motion/gsap';
 
 // Assets that are coming: plain text, not controls (no hover, no pointer), visibly muted
 const SoonChip: React.FC<{ icon: Icon; name: string; soon: string }> = ({ icon: AssetIcon, name, soon }) => (
@@ -26,42 +25,36 @@ export const Hero: React.FC = () => {
   const t = useT();
   const h = t.landing.hero;
   const prices = useMarketPrices().data;
-  const scope = useRef<HTMLElement>(null);
 
-  // Entrance on load, ≤ 1.2s: words → sub → CTAs → price card (07-motion §4.3).
-  // Arabic is split into words only, never characters, and the split is reverted after.
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add(`(prefers-reduced-motion: no-preference)`, () => {
-        const split = SplitText.create('[data-hero-title]', { type: 'words,lines', mask: 'lines' });
-        const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-        tl.from(split.words, { yPercent: 100, opacity: 0, duration: T.dur6, stagger: T.stagger })
-          .from('[data-hero-sub]', { y: 12, opacity: 0, duration: T.dur5 }, '-=0.6')
-          // CTAs stay clickable from the first frame: only opacity animates, from 0.001
-          .fromTo('[data-hero-cta]', { opacity: 0.001 }, { opacity: 1, duration: T.dur5 }, '<0.1')
-          .from('[data-hero-card]', { y: 20, opacity: 0, duration: T.dur6 }, '<0.1')
-          .eventCallback('onComplete', () => split.revert());
-      });
-      return () => mm.revert();
-    },
-    { scope }
-  );
-
+  // Entrance on load: words (55ms apart) → sub → CTAs → price card (07-motion §4.3), whole words only,
+  // never characters. Pure CSS (base.css .hero-in-*): it is a fixed sequence, so it starts with the
+  // first paint and costs no main thread. As GSAP tweens it read each word's transform right after
+  // writing the previous one, forcing a full page layout per word: ~1.2s on a mid-range phone (D35).
   return (
-    <section ref={scope} className="relative bg-wash pt-18">
+    <section className="relative bg-wash pt-18">
       <div className="container-landing px-5 md:px-8 xl:px-13 min-h-svh py-21 grid grid-cols-1 lg:grid-cols-golden gap-13 items-center">
         <div className="flex flex-col gap-8 min-w-0">
           {/* The page's one eyebrow (06-style §9: max one per three sections) */}
           <p className="m-0 -mb-5 text-sm font-semibold text-fg-muted">{h.eyebrow}</p>
           <h1 data-hero-title className="m-0 text-h1 sm:text-display-lg xl:text-display-xl font-bold text-fg py-0.5">
-            {noOrphan(h.title)}
+            {/* Each word rises inside its own mask (one line box tall). Spaces stay real text, so
+                lines wrap exactly as plain text; the no-orphan space keeps the last two words together */}
+            {noOrphan(h.title)
+              .split(' ')
+              .map((word, i) => (
+                <React.Fragment key={i}>
+                  {i > 0 && ' '}
+                  <span className="inline-block overflow-hidden align-top">
+                    <span className="hero-in-word inline-block" style={{ '--i': i } as React.CSSProperties}>
+                      {word}
+                    </span>
+                  </span>
+                </React.Fragment>
+              ))}
           </h1>
-          <p data-hero-sub className="m-0 max-w-128 text-h4 font-normal text-fg-muted">
-            {noOrphan(h.sub)}
-          </p>
+          <p className="hero-in-sub m-0 max-w-128 text-h4 font-normal text-fg-muted">{noOrphan(h.sub)}</p>
           {/* Asset roadmap: gold is live, the rest is announced, never clickable */}
-          <ul data-hero-sub aria-label={h.assetsLabel} className="m-0 p-0 list-none flex flex-wrap gap-2">
+          <ul aria-label={h.assetsLabel} className="hero-in-sub m-0 p-0 list-none flex flex-wrap gap-2">
             <li className="inline-flex items-center gap-2 h-control-sm px-3 rounded-sm border border-line-strong bg-surface-1 text-sm text-fg">
               <CoinsIcon size={16} aria-hidden="true" />
               <span className="font-semibold">{h.assets.gold}</span>
@@ -74,7 +67,7 @@ export const Hero: React.FC = () => {
             <SoonChip icon={DropIcon} name={h.assets.oil} soon={h.comingSoon} />
           </ul>
 
-          <div data-hero-cta className="flex flex-col gap-3">
+          <div data-hero-cta data-gold-cta className="hero-in-cta flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-3">
               <ButtonLink to="/signup" variant="accent" size="xl">
                 {h.cta}
@@ -90,7 +83,7 @@ export const Hero: React.FC = () => {
           </div>
         </div>
 
-        <div data-hero-card className="min-w-0">
+        <div className="hero-in-card min-w-0">
           {prices ? (
             <LivePricePanel prices={prices} className="shadow-showcase" />
           ) : (

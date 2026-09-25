@@ -23,6 +23,7 @@ interface SignatureCardProps {
   // The ownership record is still loading (no token yet)
   pending?: boolean;
   height?: CardHeight;
+  stackedHeight?: 'fixed' | 'auto';
   className?: string;
 }
 
@@ -38,6 +39,7 @@ export const SignatureCard: React.FC<SignatureCardProps> = ({
   onContactSupport,
   pending = false,
   height = 'small',
+  stackedHeight = 'fixed',
   className = '',
 }) => {
   const t = useT();
@@ -57,6 +59,7 @@ export const SignatureCard: React.FC<SignatureCardProps> = ({
     return (
       <Card
         height={height}
+        stackedHeight={stackedHeight}
         padding="normal"
         role="alert"
         className={`justify-between bg-danger-bg border-danger-line ${className}`}
@@ -76,7 +79,7 @@ export const SignatureCard: React.FC<SignatureCardProps> = ({
   }
 
   return (
-    <Card height={height} padding="normal" className={`justify-between ${className}`}>
+    <Card height={height} stackedHeight={stackedHeight} padding="normal" className={`justify-between ${className}`}>
       {/* Wraps in narrow columns: the badge drops under the title instead of squeezing it */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">

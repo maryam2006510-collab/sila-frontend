@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import * as m from 'motion/react-m';
 import {
   SidebarSimpleIcon,
   SealCheckIcon,
@@ -17,6 +18,7 @@ import { useMirrored } from '@/lib/direction';
 import { isPremiumActive } from '@/lib/status';
 import { User } from '@/lib/types';
 import { useT } from '@/i18n';
+import { radius, spring } from '@/motion/tokens';
 import { sidebarItems } from './navItems';
 
 interface SidebarProps {
@@ -79,23 +81,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onSwitchRole }
               end={item.end}
               aria-label={collapsed ? item.label : undefined}
               className={({ isActive }) =>
-                `flex items-center gap-3 h-control-lg rounded-sm text-label font-medium select-none outline-none focus-visible:ring-3 focus-visible:ring-line-focus/35 transition-colors dur-2 ease-standard ${
-                  collapsed ? 'justify-center px-0' : 'px-3'
-                } ${isActive ? 'bg-sidebar-active text-sidebar-fg font-semibold' : 'text-sidebar-fg-muted hover:text-sidebar-fg hover:bg-sidebar-hover'}`
+                `relative flex items-center gap-3 h-control-lg rounded-sm text-label font-medium select-none outline-none focus-visible:ring-3 focus-visible:ring-line-focus/35 transition-colors dur-2 ease-standard ${
+                  collapsed ? 'size-12 mx-auto justify-center' : 'px-3'
+                } ${isActive ? 'text-sidebar-fg font-semibold' : 'text-sidebar-fg-muted hover:text-sidebar-fg hover:bg-sidebar-hover'}`
               }
             >
               {({ isActive }) => (
                 <>
+                  {/* One active surface that slides to the chosen item (07-motion §3 #6) */}
+                  {isActive && (
+                    // A separate identity per mode: collapsing swaps the sidebar width instantly (D9),
+                    // so the indicator must not stretch across the two layouts
+                    <m.span
+                      key={collapsed ? 'collapsed' : 'expanded'}
+                      layoutId={collapsed ? 'sidebar-active-collapsed' : 'sidebar-active'}
+                      transition={spring.snappy}
+                      style={{ borderRadius: radius.sm }}
+                      className="absolute inset-0 bg-sidebar-active"
+                      aria-hidden="true"
+                    />
+                  )}
                   <StateIcon
                     icon={item.icon}
                     active={isActive}
                     size={collapsed ? 24 : 20}
                     mirrored={item.mirror && mirrored}
-                    className={item.premium ? 'text-gold' : undefined}
+                    className={`relative ${item.premium ? 'text-gold' : ''}`}
                   />
-                  {!collapsed && <span className="flex-1 truncate text-start">{item.label}</span>}
+                  {!collapsed && <span className="relative flex-1 truncate text-start">{item.label}</span>}
                   {!collapsed && item.premium && !hasPremium && (
-                    <span className="h-6 px-2 inline-flex items-center rounded-xs text-sm font-medium border border-sidebar-line text-sidebar-fg-muted">
+                    <span className="relative h-6 px-2 inline-flex items-center rounded-xs text-sm font-medium border border-sidebar-line text-sidebar-fg-muted">
                       {t.shell.newBadge}
                     </span>
                   )}

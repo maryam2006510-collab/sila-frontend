@@ -23,10 +23,10 @@ export const AuthShell: React.FC<{ children: React.ReactNode }> = ({ children })
       </header>
 
       <main className="flex items-start md:items-center justify-center px-5 py-8 md:p-13">
-        <div className="w-full max-w-g5">{children}</div>
+        <div className="w-full max-w-g5 page-stagger">{children}</div>
       </main>
 
-      <aside className="hidden md:flex flex-col justify-between bg-surface-brand text-fg-on-brand p-13">
+      <aside className="hidden md:flex flex-col justify-between bg-surface-brand text-fg-on-brand p-13 page-stagger">
         <Logo variant="full" tone="white" height={40} linkHome />
         <div className="flex flex-col gap-8">
           <p className="text-h3 font-semibold m-0">{t.auth.brandLine}</p>

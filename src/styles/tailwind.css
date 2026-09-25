@@ -255,6 +255,34 @@
   width: calc(100vw - 3 * var(--gap-sm));
 }
 
+/* A full-bleed horizontal track whose first and last items line up with the landing container
+   edges (the same 20 / 32 / 52 padding ladder, plus the centring margin on wide screens) */
+@utility track-inset {
+  padding-inline: var(--gap-sm);
+  @media (width >= 48rem) {
+    padding-inline: var(--gap-md);
+  }
+  @media (width >= 80rem) {
+    padding-inline: max(var(--gap-lg), calc((100% - var(--container-landing)) / 2 + var(--gap-lg)));
+  }
+}
+
+/* Swipe carousels keep native scrolling but drop the scrollbar chrome */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Below-the-fold landing sections (D35): the browser skips their layout and paint until they come
+   near the screen. Only for sections after every pinned or scrubbed one, so no ScrollTrigger position
+   depends on the estimate; `auto` remembers the real size once rendered. */
+@utility cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+
 /* Landing container 1320 (04-layout §3) */
 @utility container-landing {
   max-width: var(--container-landing);
@@ -269,6 +297,12 @@
 /* Control state transitions: colors + press transform (01-color §5.5, 07-motion §3 #1-2) */
 @utility transition-control {
   transition-property: background-color, border-color, color, box-shadow, transform;
+}
+
+/* Surface state changes on a box that Motion may be moving: never lists transform, so CSS and
+   Motion never fight over it (07-motion §1 rule 1) */
+@utility transition-surface {
+  transition-property: background-color, border-color, box-shadow, backdrop-filter;
 }
 
 /* Motion duration utilities (07-motion §2.1) */

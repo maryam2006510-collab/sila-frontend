@@ -307,6 +307,172 @@ figcaption {
   fill: var(--logo-on-canvas);
 }
 
+/* ----------------------------------------------------------------------------
+   Pointer affordance (D30): everything a person can activate shows the hand,
+   anything disabled shows not-allowed. Tailwind v4 dropped the button default,
+   so it is set once here instead of per component. Utilities still override it.
+   ---------------------------------------------------------------------------- */
+button,
+[role='button'],
+[role='tab'],
+[role='radio'],
+[role='checkbox'],
+[role='switch'],
+[role='option'],
+[role='menuitem'],
+summary,
+select,
+label[for],
+label:has(input[type='checkbox'], input[type='radio']),
+input[type='checkbox'],
+input[type='radio'],
+input[type='range'],
+input[type='file'],
+input[type='submit'],
+input[type='button'] {
+  cursor: pointer;
+}
+
+:disabled,
+[aria-disabled='true'],
+label:has(input:disabled) {
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------------------------------------------
+   Page entrance (D31, 07-motion §3 #3 & §2.4): the sections of every app page rise
+   in sequence, 55ms apart, first 8 only (max total stagger 340ms, rounded to the
+   ladder). `backwards` fill leaves no transform behind once finished, so sticky
+   and fixed children behave normally afterwards.
+   ---------------------------------------------------------------------------- */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    translate: 0 var(--rise-distance, 12px);
+  }
+}
+
+.page-stagger > * > * {
+  animation: rise-in var(--dur-5) var(--ease-out-expo) backwards;
+}
+
+.page-stagger > * > :nth-child(2) {
+  animation-delay: 55ms;
+}
+.page-stagger > * > :nth-child(3) {
+  animation-delay: 110ms;
+}
+.page-stagger > * > :nth-child(4) {
+  animation-delay: 165ms;
+}
+.page-stagger > * > :nth-child(5) {
+  animation-delay: 220ms;
+}
+.page-stagger > * > :nth-child(6) {
+  animation-delay: 275ms;
+}
+.page-stagger > * > :nth-child(n + 7) {
+  animation-delay: 330ms;
+}
+
+/* Landing hero entrance (07-motion §4.3, D35): words rise out of their masks 55ms apart, then the
+   sub, the CTAs (opacity from 0.001 only, clickable from the first frame) and the price card */
+@keyframes hero-word {
+  from {
+    opacity: 0;
+    translate: 0 100%;
+  }
+}
+
+@keyframes cta-in {
+  from {
+    opacity: 0.001;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-in-word {
+    animation: hero-word var(--dur-6) var(--ease-out-expo) calc(var(--i, 0) * 55ms) backwards;
+  }
+
+  .hero-in-sub {
+    --rise-distance: 12px;
+    animation: rise-in var(--dur-5) var(--ease-out-expo) 450ms backwards;
+  }
+
+  .hero-in-cta {
+    animation: cta-in var(--dur-5) var(--ease-out-expo) 550ms backwards;
+  }
+
+  .hero-in-card {
+    --rise-distance: 20px;
+    animation: rise-in var(--dur-6) var(--ease-out-expo) 650ms backwards;
+  }
+}
+
+/* Landing reveals (D31, D35): hidden until marked in view by useLandingReveals, then one CSS
+   animation. Only with motion allowed; otherwise content simply shows. */
+@keyframes wipe-up {
+  from {
+    opacity: 0;
+    translate: 0 32px;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is([data-reveal], [data-reveal-block], [data-reveal-item]):not([data-revealed]) {
+    opacity: 0;
+  }
+
+  [data-reveal][data-revealed] {
+    animation: wipe-up var(--dur-6) var(--ease-out-expo) backwards;
+  }
+
+  [data-reveal-block][data-revealed] {
+    --rise-distance: 32px;
+    animation: rise-in var(--dur-5) var(--ease-out-expo) backwards;
+  }
+
+  [data-reveal-item][data-revealed] {
+    --rise-distance: 20px;
+    animation: rise-in var(--dur-5) var(--ease-out-expo) var(--reveal-delay, 0ms) backwards;
+  }
+}
+
+/* Sparkline first view (07-motion §3 #10): the line wipes in along time (charts read LTR), then
+   the end square settles. Held at the start until the chart is on screen (data-inview). */
+@keyframes draw-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes settle-in {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+
+.spark-draw {
+  animation: draw-in var(--dur-6) var(--ease-out-expo) backwards;
+}
+
+.spark-end {
+  animation: settle-in var(--dur-4) var(--ease-out-expo) 760ms backwards;
+}
+
+[data-inview='false'] :is(.spark-draw, .spark-end) {
+  animation-play-state: paused;
+}
+
 /* Accordions draw their own caret */
 summary::-webkit-details-marker {
   display: none;

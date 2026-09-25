@@ -2,17 +2,14 @@
 // For sellers per UI Kit 08-ux §12 #8: the real listing card + three facts + "سجّل كبائع".
 
 import React from 'react';
-import * as m from 'motion/react-m';
 import { ScalesIcon, SealCheckIcon, MegaphoneIcon } from '@phosphor-icons/react';
 import { ButtonLink } from '@/components/ui/Button';
 import { ListingCard } from '@/components/fin/ListingCard';
 import { useListings } from '@/lib/queries';
-import { duration, ease } from '@/motion/tokens';
 import { noOrphan } from '@/lib/noOrphan';
 import { useT } from '@/i18n';
 
 const FACT_ICONS = [ScalesIcon, SealCheckIcon, MegaphoneIcon];
-const reveal = { duration: duration.dur5 / 1000, ease: ease.outExpo };
 
 export const ForSellers: React.FC = () => {
   const t = useT();
@@ -24,22 +21,18 @@ export const ForSellers: React.FC = () => {
     <section
       id="sellers"
       aria-label={s.title}
-      className="landing-anchor container-landing px-5 md:px-8 xl:px-13 py-21 lg:py-34"
+      className="landing-anchor cv-auto container-landing px-5 md:px-8 xl:px-13 py-21 lg:py-34"
     >
       <div className="grid grid-cols-1 lg:grid-cols-golden gap-13 items-center">
-        <m.div
-          initial={{ opacity: 0, y: 32 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={reveal}
-          className="flex flex-col gap-8"
-        >
-          <h2 className="m-0 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">{noOrphan(s.title)}</h2>
+        <div className="flex flex-col gap-8">
+          <h2 data-reveal className="m-0 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">
+            {noOrphan(s.title)}
+          </h2>
           <ul className="m-0 p-0 list-none flex flex-col gap-5">
             {s.facts.map((fact, i) => {
               const FactIcon = FACT_ICONS[i];
               return (
-                <li key={fact.title} className="flex items-start gap-3">
+                <li data-reveal-item key={fact.title} className="flex items-start gap-3">
                   <FactIcon size={24} className="text-fg-muted shrink-0 mt-2" aria-hidden="true" />
                   <div>
                     <h3 className="m-0 text-h4 font-semibold text-fg">{fact.title}</h3>
@@ -52,10 +45,10 @@ export const ForSellers: React.FC = () => {
           <ButtonLink to="/signup/seller" variant="secondary" size="lg" className="self-start">
             {s.cta}
           </ButtonLink>
-        </m.div>
+        </div>
 
         {/* The same card investors see in the market, with a live listing, not an illustration */}
-        <div className="justify-self-center w-full max-w-g4" inert aria-hidden="true">
+        <div data-reveal-block className="justify-self-center w-full max-w-g4" inert aria-hidden="true">
           {showcase ? (
             <ListingCard listing={showcase} demo />
           ) : (

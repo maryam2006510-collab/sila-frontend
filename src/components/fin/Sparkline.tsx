@@ -2,7 +2,8 @@
 // Custom SVG sparkline per UI Kit 06-style §7 & §3.2: 1.5px monotone line, square end marker.
 // Fills its container width; the stroke does not scale with the viewBox.
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
+import { useInViewOnce } from '@/lib/hooks';
 import { scaleLinear } from 'd3-scale';
 import { line as d3Line, curveMonotoneX } from 'd3-shape';
 
@@ -25,6 +26,9 @@ export const Sparkline: React.FC<SparklineProps> = ({
   color = 'var(--chart-gold-line)',
   className = '',
 }) => {
+  // The line draws once, the first time it is seen (07-motion §3 #10); base.css .spark-draw
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInViewOnce(ref);
   const geometry = useMemo(() => {
     if (!data || data.length < 2) return null;
     const min = Math.min(...data);
@@ -52,13 +56,20 @@ export const Sparkline: React.FC<SparklineProps> = ({
   }
 
   return (
-    <div className={`relative w-full ${className}`} style={{ height }} dir="ltr" aria-hidden="true">
+    <div
+      ref={ref}
+      data-inview={inView}
+      className={`relative w-full ${className}`}
+      style={{ height }}
+      dir="ltr"
+      aria-hidden="true"
+    >
       <svg
         width="100%"
         height={height}
         viewBox={`0 0 ${VIEW_W} ${height}`}
         preserveAspectRatio="none"
-        className="block"
+        className="block spark-draw"
       >
         <path
           d={geometry.path}
@@ -72,7 +83,7 @@ export const Sparkline: React.FC<SparklineProps> = ({
       </svg>
       {/* End marker: 8×8 rounded square (logo square motif), kept undistorted in HTML */}
       <span
-        className="absolute size-2 rounded-2xs -translate-x-1/2 -translate-y-1/2"
+        className="spark-end absolute size-2 rounded-2xs -translate-x-1/2 -translate-y-1/2"
         style={{ left: `${geometry.endX * 100}%`, top: geometry.endY, backgroundColor: color }}
       />
     </div>

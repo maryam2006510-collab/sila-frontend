@@ -36,7 +36,7 @@ test.describe('landing', () => {
     expect(errors).toEqual([]);
   });
 
-  test('the nav hides on scroll down, returns on scroll up, and never shows two gold CTAs', async ({ page }) => {
+  test('the nav stays on screen once scrolled, and never shows two gold CTAs', async ({ page }) => {
     await page.goto('/');
     const header = page.locator('header').first();
     const navCta = header.locator('a[href="/signup"]');
@@ -44,13 +44,17 @@ test.describe('landing', () => {
     // The hero holds the only gold CTA at the top
     await expect(navCta).toHaveCount(0);
 
+    // Scrolling down keeps the bar (D29); the hero CTA is off screen, so the nav carries the gold one
     await page.mouse.wheel(0, 1400);
-    await expect(header).not.toBeInViewport();
-
-    await page.mouse.wheel(0, -200);
-    await expect(header).toBeInViewport();
-    // Hero CTA is off screen now, so the nav carries the gold one
+    await expect(header.getByRole('link', { name: 'الأسعار' })).toBeInViewport();
     await expect(navCta).toBeVisible();
+  });
+
+  test('a section link glides to its section and marks it as current', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('navigation', { name: 'القائمة' }).getByRole('link', { name: 'الأسئلة' }).click();
+    await expect(page.locator('#faq')).toBeInViewport();
+    await expect(page.getByRole('link', { name: 'الأسئلة' }).first()).toHaveAttribute('aria-current', 'location');
   });
 
   test('the open-account CTA leads to signup', async ({ page }) => {

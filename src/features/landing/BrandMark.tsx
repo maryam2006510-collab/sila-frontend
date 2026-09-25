@@ -27,12 +27,15 @@ export const BrandMark: React.FC = () => {
         const cx = box.left + box.width / 2;
         const cy = box.top + box.height / 2;
 
-        // Each piece starts pushed outward along its own direction from the centre
+        // Each piece starts pushed outward along its own direction from the centre. All pieces are
+        // measured first, then animated: measuring between writes would force a layout per piece.
         const pieces = gsap.utils.toArray<SVGPathElement>('[data-piece]');
-        pieces.forEach((piece) => {
+        const offsets = pieces.map((piece) => {
           const r = piece.getBoundingClientRect();
-          const dx = (r.left + r.width / 2 - cx) * 0.6;
-          const dy = (r.top + r.height / 2 - cy) * 0.6;
+          return { dx: (r.left + r.width / 2 - cx) * 0.6, dy: (r.top + r.height / 2 - cy) * 0.6 };
+        });
+        pieces.forEach((piece, i) => {
+          const { dx, dy } = offsets[i];
           gsap.fromTo(
             piece,
             { x: dx, y: dy, opacity: 0 },

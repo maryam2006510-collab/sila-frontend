@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Segmented, SegmentOption } from '@/components/ui/Segmented';
 import { RollingNumber } from '@/components/ui/RollingNumber';
 import { Num } from '@/components/ui/Num';
-import { PriceChart } from './PriceChart';
+import { LazyPriceChart } from './LazyPriceChart';
 import { CHART_RANGES, ChartRange } from '@/lib/priceHistory';
 import { usePriceHistory } from '@/lib/queries';
 import { fmtPct, fmtRelativeTime, fmtTime, fmtIQD } from '@/lib/formatters';
@@ -98,7 +98,7 @@ export const LivePricePanel: React.FC<LivePricePanelProps> = ({ prices, classNam
 
       {/* The chart takes whatever height the fixed 356 card leaves (never overflows) */}
       <div className="flex-1 min-h-0">
-        <PriceChart
+        <LazyPriceChart
           compact
           data={chartData}
           ariaLabel={`${t.market.chartLabel(24)}: ${fmtIQD(prices.price_24k)} ${t.units.iqd}${change !== null ? `، ${fmtPct(change)}` : ''}`}

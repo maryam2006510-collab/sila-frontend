@@ -1,7 +1,8 @@
 // src/features/auth/LoginPage.tsx
 // Login per UI Kit 08-ux-user-flows.md §4 Screen 1.3 (workflow 01, step 3)
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { prefetchAppShell } from '@/app/router';
 import { useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,6 +39,8 @@ const useReturnTo = () => {
 
 export const LoginPage: React.FC = () => {
   const t = useT();
+  // The dashboard shell downloads while the form is being filled in (D35)
+  useEffect(prefetchAppShell, []);
   const navigate = useNavigate();
   const returnTo = useReturnTo();
   const hasSession = useSessionStore((s) => s.hasSession);

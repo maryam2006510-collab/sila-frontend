@@ -21,19 +21,24 @@ export const PremiumBento: React.FC = () => {
   return (
     <section
       aria-label={p.title}
-      className="container-landing px-5 md:px-8 xl:px-13 py-21 lg:py-34 flex flex-col gap-13"
+      className="cv-auto container-landing px-5 md:px-8 xl:px-13 py-21 lg:py-34 flex flex-col gap-13"
     >
       <div className="flex flex-col gap-3">
         <h2 className="m-0 flex items-center gap-3 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">
           <CrownIcon size={52} className="text-fg-gold shrink-0" aria-hidden="true" />
-          {noOrphan(p.title)}
+          <span data-reveal>{noOrphan(p.title)}</span>
         </h2>
-        <p className="m-0 text-h4 font-normal text-fg-muted">{p.free}</p>
+        <p data-reveal-block className="m-0 text-h4 font-normal text-fg-muted">
+          {p.free}
+        </p>
       </div>
 
       {/* Bento: one wide cell + two stacked cells (not three identical cards) */}
       <div className="grid grid-cols-1 md:grid-cols-golden gap-5">
-        <article className="md:row-span-2 rounded-md bg-surface-1 border border-line p-8 flex flex-col gap-5">
+        <article
+          data-reveal-item
+          className="md:row-span-2 rounded-md bg-surface-1 border border-line p-8 flex flex-col gap-5"
+        >
           <h3 className="m-0 flex items-center gap-2 text-h3 font-semibold text-fg">
             <TrendUpIcon size={32} className="text-fg-muted" aria-hidden="true" />
             {p.trendTitle}
@@ -42,7 +47,7 @@ export const PremiumBento: React.FC = () => {
           <Sparkline data={TREND} height={136} className="mt-auto" />
         </article>
 
-        <article className="rounded-md bg-surface-1 border border-line p-5 flex flex-col gap-3">
+        <article data-reveal-item className="rounded-md bg-surface-1 border border-line p-5 flex flex-col gap-3">
           <h3 className="m-0 flex items-center gap-2 text-h4 font-semibold text-fg">
             <BellIcon size={24} className="text-fg-muted" aria-hidden="true" />
             {p.alertsTitle}
@@ -56,7 +61,7 @@ export const PremiumBento: React.FC = () => {
           </ul>
         </article>
 
-        <article className="rounded-md bg-surface-1 border border-line p-5 flex flex-col gap-3">
+        <article data-reveal-item className="rounded-md bg-surface-1 border border-line p-5 flex flex-col gap-3">
           <h3 className="m-0 flex items-center gap-2 text-h4 font-semibold text-fg">
             <ChartLineUpIcon size={24} className="text-fg-muted" aria-hidden="true" />
             {p.reportTitle}

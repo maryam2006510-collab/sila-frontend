@@ -9,14 +9,15 @@ import * as m from 'motion/react-m';
 import { noOrphan } from '@/lib/noOrphan';
 import { useT } from '@/i18n';
 import { useDirection } from '@/lib/direction';
-import { duration, ease } from '@/motion/tokens';
+import { useMediaQuery } from '@/lib/hooks';
+import { transition } from '@/motion/tokens';
 import { gsap, useGSAP, MQ, T } from './motion/gsap';
 import { PricesScreen, MatchScreen, ReviewScreen, VerifyScreen, OwnScreen } from './DemoScreens';
 
 const SCREENS = [PricesScreen, MatchScreen, ReviewScreen, VerifyScreen, OwnScreen];
 
 // Section reveal: y 32 → 0 + fade, dur-5, out-expo (07-motion §4.6)
-const reveal = { duration: duration.dur5 / 1000, ease: ease.outExpo };
+const reveal = transition.reveal;
 const LABELS = ['prices', 'match', 'preview', 'verify', 'own'];
 
 // Illustrative frame: its buttons are not real controls, so it is inert for keyboard/AT
@@ -24,7 +25,7 @@ const DeviceFrame: React.FC<{ children: React.ReactNode; className?: string }> =
   <div
     inert
     aria-hidden="true"
-    className={`relative w-full max-w-110 rounded-lg border border-line-strong bg-canvas p-5 shadow-lg ${className}`}
+    className={`relative w-full max-w-110 rounded-lg border border-line-strong bg-canvas p-3 sm:p-5 shadow-lg ${className}`}
   >
     {children}
   </div>
@@ -35,6 +36,8 @@ export const Walkthrough: React.FC = () => {
   const w = t.landing.how;
   const isRtl = useDirection() === 'rtl';
   const pinRef = useRef<HTMLDivElement>(null);
+  // Only the variant on screen is built: each carries five live demo screens
+  const pinned = useMediaQuery(MQ.desktop);
 
   useGSAP(
     () => {
@@ -74,76 +77,82 @@ export const Walkthrough: React.FC = () => {
       });
       return () => mm.revert();
     },
-    { scope: pinRef, dependencies: [isRtl] }
+    { scope: pinRef, dependencies: [isRtl, pinned] }
   );
 
   return (
     <section id="how" aria-label={w.title} className="landing-anchor">
       {/* ---- Desktop: pinned, scroll-driven -------------------------------- */}
-      <div ref={pinRef} className="hidden motion-safe:lg:flex h-svh items-center">
-        <div className="container-landing w-full px-8 xl:px-13 grid grid-cols-golden gap-13 items-center">
-          <div className="flex flex-col gap-8">
-            <h2 className="m-0 text-display-lg font-bold text-fg">{noOrphan(w.title)}</h2>
+      {pinned ? (
+        <div ref={pinRef} className="flex h-svh items-center">
+          <div className="container-landing w-full px-8 xl:px-13 grid grid-cols-golden gap-13 items-center">
+            <div className="flex flex-col gap-8">
+              <h2 data-reveal className="m-0 text-display-lg font-bold text-fg">
+                {noOrphan(w.title)}
+              </h2>
 
-            {/* Progress rail: 5 Sila Cut segments */}
-            <div className="flex gap-1" role="img" aria-label={w.progress}>
-              {w.steps.map((s) => (
-                <span key={s.title} className="relative h-1 flex-1 sila-cut bg-line overflow-hidden">
-                  <span data-rail-fill className="absolute inset-0 bg-state-indicator" />
-                </span>
-              ))}
+              {/* Progress rail: 5 Sila Cut segments */}
+              <div className="flex gap-1" role="img" aria-label={w.progress}>
+                {w.steps.map((s) => (
+                  <span key={s.title} className="relative h-1 flex-1 sila-cut bg-line overflow-hidden">
+                    <span data-rail-fill className="absolute inset-0 bg-state-indicator" />
+                  </span>
+                ))}
+              </div>
+
+              <div className="relative min-h-g3">
+                {w.steps.map((s) => (
+                  <div key={s.title} data-step className="absolute inset-0 flex flex-col gap-3">
+                    <h3 className="m-0 text-h2 font-semibold text-fg">{noOrphan(s.title)}</h3>
+                    <p className="m-0 max-w-128 text-h4 font-normal text-fg-muted">{s.body}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="relative min-h-g3">
-              {w.steps.map((s) => (
-                <div key={s.title} data-step className="absolute inset-0 flex flex-col gap-3">
-                  <h3 className="m-0 text-h2 font-semibold text-fg">{noOrphan(s.title)}</h3>
-                  <p className="m-0 max-w-128 text-h4 font-normal text-fg-muted">{s.body}</p>
+            <div className="relative h-g5 flex items-center justify-center">
+              {SCREENS.map((Screen, i) => (
+                <div key={LABELS[i]} data-screen className="absolute inset-0 flex items-center justify-center">
+                  <DeviceFrame>
+                    <Screen />
+                  </DeviceFrame>
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="relative h-g5 flex items-center justify-center">
-            {SCREENS.map((Screen, i) => (
-              <div key={LABELS[i]} data-screen className="absolute inset-0 flex items-center justify-center">
-                <DeviceFrame>
-                  <Screen />
-                </DeviceFrame>
-              </div>
-            ))}
           </div>
         </div>
-      </div>
-
-      {/* ---- Mobile / reduced motion: stacked, reveal once ----------------- */}
-      <div className="motion-safe:lg:hidden container-landing px-5 md:px-8 py-21 flex flex-col gap-13">
-        <h2 className="m-0 text-h2 sm:text-h1 font-bold text-fg">{noOrphan(w.title)}</h2>
-        <ol className="m-0 p-0 list-none flex flex-col gap-21">
-          {w.steps.map((s, i) => {
-            const Screen = SCREENS[i];
-            return (
-              <m.li
-                key={s.title}
-                initial={{ opacity: 0, y: 32 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={reveal}
-                className="flex flex-col gap-5"
-              >
-                <div className="flex flex-col gap-2">
-                  <span className="h-1 w-13 sila-cut bg-state-indicator" aria-hidden="true" />
-                  <h3 className="m-0 text-h3 font-semibold text-fg">{noOrphan(s.title)}</h3>
-                  <p className="m-0 text-h4 font-normal text-fg-muted">{s.body}</p>
-                </div>
-                <DeviceFrame>
-                  <Screen />
-                </DeviceFrame>
-              </m.li>
-            );
-          })}
-        </ol>
-      </div>
+      ) : (
+        /* ---- Mobile / reduced motion: stacked, reveal once ----------------- */
+        <div className="container-landing px-5 md:px-8 py-21 flex flex-col gap-13">
+          <h2 data-reveal className="m-0 text-h2 sm:text-h1 font-bold text-fg">
+            {noOrphan(w.title)}
+          </h2>
+          <ol className="m-0 p-0 list-none flex flex-col gap-21">
+            {w.steps.map((s, i) => {
+              const Screen = SCREENS[i];
+              return (
+                <m.li
+                  key={s.title}
+                  initial={{ opacity: 0, y: 32 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={reveal}
+                  className="flex flex-col gap-5"
+                >
+                  <div className="flex flex-col gap-2">
+                    <span className="h-1 w-13 sila-cut bg-state-indicator" aria-hidden="true" />
+                    <h3 className="m-0 text-h3 font-semibold text-fg">{noOrphan(s.title)}</h3>
+                    <p className="m-0 text-h4 font-normal text-fg-muted">{s.body}</p>
+                  </div>
+                  <DeviceFrame>
+                    <Screen />
+                  </DeviceFrame>
+                </m.li>
+              );
+            })}
+          </ol>
+        </div>
+      )}
     </section>
   );
 };

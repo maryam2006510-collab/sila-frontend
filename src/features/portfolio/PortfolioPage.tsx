@@ -88,6 +88,7 @@ export const PortfolioPage: React.FC = () => {
   const hero = integrityFailed ? (
     <Card
       height="listing"
+      stackedHeight="auto"
       padding="spacious"
       role="alert"
       className="justify-center gap-4 bg-danger-bg border-danger-line"
@@ -104,7 +105,7 @@ export const PortfolioPage: React.FC = () => {
   ) : ownershipQuery.isError ? (
     <ErrorState height="listing" message={p.loadFailed} onRetry={() => ownershipQuery.refetch()} />
   ) : (
-    <Card height="listing" padding="spacious" className="justify-between">
+    <Card height="listing" stackedHeight="auto" padding="spacious" className="justify-between gap-5">
       <div>
         <p className="m-0 text-body text-fg-muted">{p.holdings}</p>
         <p className="m-0 text-h1 font-bold text-fg">
@@ -156,6 +157,7 @@ export const PortfolioPage: React.FC = () => {
         {hero}
         <SignatureCard
           height="listing"
+          stackedHeight="auto"
           token={ownership?.digital_signature_token ?? undefined}
           verified={Boolean(ownershipQuery.data?.verified)}
           isIntegrityFailed={integrityFailed}

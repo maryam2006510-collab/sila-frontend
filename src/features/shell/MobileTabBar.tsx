@@ -3,12 +3,14 @@
 
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import * as m from 'motion/react-m';
 import { DotsThreeIcon, SignOutIcon } from '@phosphor-icons/react';
 import { StateIcon } from '@/components/ui/StateIcon';
 import { Sheet } from '@/components/ui/Sheet';
 import { useMirrored } from '@/lib/direction';
 import { UserRole } from '@/lib/types';
 import { useT } from '@/i18n';
+import { spring } from '@/motion/tokens';
 import { tabBarItems, moreItems } from './navItems';
 
 interface MobileTabBarProps {
@@ -17,9 +19,19 @@ interface MobileTabBarProps {
 }
 
 const tabClass = (active: boolean) =>
-  `flex-1 h-full flex flex-col items-center justify-center gap-1 outline-none select-none focus-visible:bg-state-hover transition-colors dur-2 ease-standard ${
+  `relative flex-1 h-full flex flex-col items-center justify-center gap-1 outline-none select-none focus-visible:bg-state-hover transition-colors dur-2 ease-standard ${
     active ? 'text-state-indicator font-semibold' : 'text-fg-subtle hover:text-fg font-medium'
   }`;
+
+// Short Sila Cut bar on the tab bar's top edge that slides to the active tab (07-motion §3 #6)
+const TabIndicator: React.FC = () => (
+  <m.span
+    layoutId="tabbar-active"
+    transition={spring.snappy}
+    className="absolute top-0 inset-x-0 mx-auto w-8 h-0.5 sila-cut bg-state-indicator"
+    aria-hidden="true"
+  />
+);
 
 export const MobileTabBar: React.FC<MobileTabBarProps> = ({ role, onLogout }) => {
   const t = useT();
@@ -41,6 +53,7 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({ role, onLogout }) =>
             <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => tabClass(isActive)}>
               {({ isActive }) => (
                 <>
+                  {isActive && <TabIndicator />}
                   <StateIcon icon={item.icon} active={isActive} size={24} mirrored={item.mirror && mirrored} />
                   <span className="text-sm whitespace-nowrap">{item.shortLabel ?? item.label}</span>
                 </>
@@ -54,6 +67,7 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({ role, onLogout }) =>
             className={tabClass(moreActive)}
             aria-haspopup="dialog"
           >
+            {moreActive && <TabIndicator />}
             <StateIcon icon={DotsThreeIcon} active={moreActive} size={24} />
             <span className="text-sm">{t.shell.nav.more}</span>
           </button>

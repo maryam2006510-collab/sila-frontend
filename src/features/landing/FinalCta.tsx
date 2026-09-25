@@ -14,16 +14,18 @@ export const FinalCta: React.FC = () => {
 
   return (
     <>
-      <section aria-label={l.finalCta.title} className="bg-wash">
+      <section aria-label={l.finalCta.title} className="bg-wash cv-auto">
         <div className="container-landing px-5 md:px-8 xl:px-13 py-21 lg:py-34 flex flex-col md:flex-row md:items-center justify-between gap-8">
-          <p className="m-0 max-w-g5 text-h2 sm:text-h1 font-bold text-fg">{noOrphan(l.finalCta.title)}</p>
-          <ButtonLink to="/signup" variant="accent" size="xl" className="self-start md:self-auto">
+          <p data-reveal className="m-0 max-w-g5 text-h2 sm:text-h1 font-bold text-fg">
+            {noOrphan(l.finalCta.title)}
+          </p>
+          <ButtonLink data-gold-cta to="/signup" variant="accent" size="xl" className="self-start md:self-auto">
             {l.nav.openAccount}
           </ButtonLink>
         </div>
       </section>
 
-      <footer id="landing-footer" className="border-t border-line-subtle">
+      <footer id="landing-footer" className="border-t border-line-subtle cv-auto">
         <div className="container-landing px-5 md:px-8 xl:px-13 py-13 grid grid-cols-1 md:grid-cols-golden gap-8">
           <div className="flex flex-col gap-5">
             <Logo variant="full" tone="auto" height={40} linkHome />
