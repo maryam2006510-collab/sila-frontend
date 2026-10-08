@@ -18,6 +18,7 @@ const load = {
   transactions: () => import('@/features/transactions/TransactionsPage'),
   settings: () => import('@/features/settings/SettingsPage'),
   match: () => import('@/features/match/SmartMatchPage'),
+  advisor: () => import('@/features/advisor/AdvisorPage'),
   checkout: () => import('@/features/checkout/CheckoutPage'),
   portfolio: () => import('@/features/portfolio/PortfolioPage'),
   premium: () => import('@/features/premium/PremiumPage'),
@@ -38,7 +39,7 @@ const SHARED = [
   () => import('@/components/fin/PriceChart'),
 ];
 const BY_ROLE: Record<UserRole, (() => Promise<unknown>)[]> = {
-  investor: [load.match, load.checkout, load.portfolio, load.premium, load.insights],
+  investor: [load.match, load.advisor, load.checkout, load.portfolio, load.premium, load.insights],
   seller: [load.sellerListings, load.newListing, load.sellerListing, load.sales],
 };
 
@@ -93,6 +94,7 @@ export const router = createBrowserRouter([
             element: <RoleRoute role="investor" />,
             children: [
               { path: 'match', lazy: () => load.match().then((m) => ({ Component: m.SmartMatchPage })) },
+              { path: 'advisor', lazy: () => load.advisor().then((m) => ({ Component: m.AdvisorPage })) },
               {
                 path: 'checkout/:listingId',
                 lazy: () => load.checkout().then((m) => ({ Component: m.CheckoutPage })),

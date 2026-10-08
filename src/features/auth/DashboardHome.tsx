@@ -9,6 +9,7 @@ import {
   ClockCounterClockwiseIcon,
   CrownIcon,
   TargetIcon,
+  ChatCircleTextIcon,
   TagIcon,
   ReceiptIcon,
   MegaphoneIcon,
@@ -114,6 +115,22 @@ const InvestorDashboard: React.FC<{ user: User; prices: MarketPrices }> = ({ use
           </Button>
         </Card>
       </div>
+
+      {/* AI Advisor entry (D37): a slim row, so the Smart Match panel keeps its fixed height */}
+      <Card padding="normal">
+        <div className="flex flex-wrap items-center gap-4">
+          <span className="size-12 shrink-0 inline-flex items-center justify-center rounded-md bg-muted border border-line-subtle text-fg-muted">
+            <ChatCircleTextIcon size={24} aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-h4 font-semibold text-fg m-0">{t.advisor.entryTitle}</h2>
+            <p className="m-0 text-sm text-fg-subtle">{t.advisor.entryBody}</p>
+          </div>
+          <Button variant="secondary" size="md" onClick={() => navigate('/app/advisor')}>
+            {t.advisor.send}
+          </Button>
+        </div>
+      </Card>
 
       {/* Row 2 (136): four KPIs, 2×2 on mobile */}
       <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">

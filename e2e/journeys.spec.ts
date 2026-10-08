@@ -125,6 +125,26 @@ test('match: a budget below the cheapest listing shows the minimum', async () =>
   await see(page, /ماكو عروض تناسب/);
 });
 
+// ---- AI Advisor (D37) ----------------------------------------------------
+test('advisor: a budget in words is confirmed before any offer, disclaimer always shown', async () => {
+  await page.getByRole('link', { name: 'المستشار الذكي' }).click();
+  await page.getByLabel('سؤالك').fill('عندي مليونين شنو أحسن شي أشتريه هسة؟');
+  await button(page, 'اسأل المستشار').click();
+  await see(page, 'فهمت ميزانيتك 2,000,000 د.ع، صح؟');
+  await expect(page.getByRole('button', { name: 'اشترِ هذا العرض' })).toHaveCount(0);
+  await expect(page.getByText(/هذي المعلومات استرشادية/)).toHaveCount(1);
+
+  await button(page, 'نعم، اعرض العروض').click();
+  await see(page, 'عروض تناسب ميزانيتك');
+  await expect(page.getByRole('button', { name: 'اشترِ هذا العرض' }).first()).toBeVisible();
+});
+
+test('advisor: a suggestion opens the existing checkout with its grams', async () => {
+  await page.getByRole('button', { name: 'اشترِ هذا العرض' }).first().click();
+  await expect(page).toHaveURL(/\/app\/checkout\//);
+  await see(page, 'كم غراماً تريد أن تشتري؟');
+});
+
 test('rbac: an investor cannot open seller routes', async () => {
   await nav(page, '/app/listings/new');
   await expect(page).toHaveURL(/\/app$/);

@@ -7,6 +7,7 @@
 import Decimal from 'decimal.js';
 import type * as W from './wire';
 import type {
+  AdvisorAnswer,
   AssetListing,
   ChartRange,
   ConfirmResult,
@@ -14,6 +15,7 @@ import type {
   Karat,
   MarketPrices,
   MatchResponse,
+  MatchResult,
   Ownership,
   Page,
   Payment,
@@ -139,22 +141,41 @@ const toRisk = (r: NonNullable<W.PreviewOut['risk_insight']>): RiskInsight => ({
 
 export const toRiskAnalysis = (r: W.RiskAnalysisOut): RiskInsight => toRisk(r);
 
+const toMatchResult = (r: W.MatchOut['results'][number]): MatchResult => ({
+  rank: r.rank,
+  listing: toListing(r.listing),
+  suggested_weight_grams: num(r.suggested_weight_grams),
+  execution_price_per_gram: num(r.execution_price_per_gram),
+  estimated_total_iqd: num(r.estimated_total_iqd),
+  commission_rate: num(r.commission_rate),
+  budget_usage_pct: pctToFraction(r.budget_usage_pct) ?? 0,
+  score: num(r.score),
+  reason: r.reason,
+});
+
 export const toMatch = (m: W.MatchOut): MatchResponse => ({
   budget_iqd: num(m.budget_iqd),
   risk_profile: m.risk_profile ?? null,
   engine: m.engine,
   message: m.message,
-  results: m.results.map((r) => ({
-    rank: r.rank,
-    listing: toListing(r.listing),
-    suggested_weight_grams: num(r.suggested_weight_grams),
-    execution_price_per_gram: num(r.execution_price_per_gram),
-    estimated_total_iqd: num(r.estimated_total_iqd),
-    commission_rate: num(r.commission_rate),
-    budget_usage_pct: pctToFraction(r.budget_usage_pct) ?? 0,
-    score: num(r.score),
-    reason: r.reason,
-  })),
+  results: m.results.map(toMatchResult),
+});
+
+// The advisor's suggestions have the exact shape of match results
+export const toAdvisor = (a: W.AdvisorOut): AdvisorAnswer => ({
+  engine: a.engine,
+  answer: a.answer,
+  budget: a.budget
+    ? { amount_iqd: num(a.budget.amount_iqd), source: a.budget.source, confirmed: a.budget.confirmed }
+    : null,
+  suggestions: a.suggestions.map(toMatchResult),
+  market: {
+    price_24k_per_gram: num(a.market_snapshot.price_24k_per_gram),
+    change_24h_pct: pctToFraction(a.market_snapshot.change_24h_pct),
+    updated_at: a.market_snapshot.updated_at,
+    is_stale: a.market_snapshot.is_stale,
+  },
+  disclaimer: a.disclaimer,
 });
 
 export const toInsights = (i: W.InsightsOut): Insights => ({

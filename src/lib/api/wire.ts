@@ -28,6 +28,8 @@ export type MatchOut = S['MatchOut'];
 export type RiskAnalysisIn = S['RiskAnalysisIn'];
 export type RiskAnalysisOut = S['RiskAnalysisOut'];
 export type InsightsOut = S['InsightsOut'];
+export type AdvisorIn = S['AdvisorIn'];
+export type AdvisorOut = S['AdvisorOut'];
 
 export type PreviewIn = S['PreviewIn'];
 export type PreviewOut = S['PreviewOut'];
