@@ -434,6 +434,107 @@ const karatReason: Record<Karat, string> = {
 };
 const riskName: Record<RiskProfile, string> = { low: 'منخفض', medium: 'متوسط', high: 'مرتفع' };
 
+const NO_MATCH = 'ماكو عروض تناسب هذي الميزانية حالياً';
+const ADVISOR_DISCLAIMER = 'هذي المعلومات استرشادية وليست نصيحة مالية. قرار الشراء يرجعلك.';
+const advisorRiskTip: Record<RiskProfile, string> = {
+  low: 'ملفك منخفض المخاطرة، فالأفضل تبدي بكمية صغيرة وتقسّم شراءك على أكثر من مرة.',
+  medium: 'ملفك متوسط المخاطرة، فوازن بين الكمية والعيار وما تحط كل ميزانيتك مرة وحدة.',
+  high: 'ملفك يقبل مخاطرة أعلى، بس حتى هيج لا تحط كل ميزانيتك بصفقة وحدة.',
+};
+const fmtWhole = (v: Decimal) => v.toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toNumber().toLocaleString('en-US');
+
+// Ranked listings for a budget: the matcher behind /ai/match and /ai/advisor (top 5)
+const matchResults = (profile: RiskProfile, budget: Decimal): W.MatchOut['results'] =>
+  listings
+    .filter((l) => l.status === 'active')
+    .map((l) => {
+      const price = karatPriceNow(l.karat);
+      // Grams whose principal + commission fits the budget, capped by availability
+      let grams = budget.div(price.times(D(1).plus(commissionRate(budget.div(price)))));
+      grams = Decimal.min(grams, l.available).toDecimalPlaces(3, Decimal.ROUND_DOWN);
+      const b = breakdown(grams, price);
+      const usage = b.total.div(budget).times(100);
+      const preferred = preferredKarats[profile].includes(l.karat);
+      const score = Decimal.min(
+        1,
+        usage
+          .div(100)
+          .times(0.7)
+          .plus(preferred ? 0.3 : 0.1)
+      ).toDecimalPlaces(4);
+      return { l, price, grams, b, usage, score, preferred };
+    })
+    .filter((c) => c.grams.gte(MIN_MATCH_GRAMS))
+    .sort((a, b) => b.score.comparedTo(a.score) || b.usage.comparedTo(a.usage))
+    .slice(0, 5)
+    .map((c, i) => ({
+      rank: i + 1,
+      listing: listingOut(c.l),
+      suggested_weight_grams: g3(c.grams),
+      execution_price_per_gram: m2(c.price),
+      estimated_total_iqd: m2(c.b.total),
+      commission_rate: r4(c.b.rate),
+      budget_usage_pct: m2(c.usage),
+      score: r4(c.score),
+      reason: `${karatReason[c.l.karat]}${c.preferred ? ` ويناسب ملف مخاطرة ${riskName[profile]}` : ''}. يمكنك شراء ${g3(c.grams)} غرام بإجمالي ${m2(c.b.total)} دينار (${m2(c.usage)}% من ميزانيتك).`,
+    }));
+
+// A budget read from the advisor question, like app/modules/ai/budget.py (simplified): digits are
+// explicit, words ("مليونين", "نص مليون", "3 ملايين", "500 ألف") need confirmation.
+const parseAdvisorBudget = (
+  question: string
+): { amount_iqd: string; source: 'question_digits' | 'question_words' } | null => {
+  const text = question
+    .replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/\b0\d{9,}\b/g, ' ');
+  const words = (amount: number) => ({ amount_iqd: String(amount), source: 'question_words' as const });
+  const unit = text.match(/(\d+(?:\.\d+)?)\s*(مليون|ملايين|الف|الاف)/);
+  if (unit) {
+    const factor = unit[2] === 'الف' || unit[2] === 'الاف' ? 1_000 : 1_000_000;
+    const amount = Math.round(Number(unit[1]) * factor);
+    if (amount >= 10_000) return words(amount);
+  }
+  const phrases: [RegExp, number][] = [
+    [/مليون\s*و\s*(?:نص|نصف)/, 1_500_000],
+    [/ربع\s+مليون/, 250_000],
+    [/(?:نص|نصف)\s+مليون/, 500_000],
+    [/مليونين/, 2_000_000],
+    [/مليون/, 1_000_000],
+  ];
+  for (const [re, amount] of phrases) if (re.test(text)) return words(amount);
+  for (const token of text.match(/\d[\d,]*(?:\.\d+)?/g) ?? []) {
+    const value = Number(token.replace(/,$/, '').replace(/,/g, ''));
+    if (value >= 10_000) return { amount_iqd: value.toFixed(2), source: 'question_digits' };
+  }
+  return null;
+};
+
+const advisorAnswer = (
+  profile: RiskProfile,
+  budget: W.AdvisorOut['budget'],
+  suggestions: W.MatchOut['results']
+): string => {
+  const change = change24hPct();
+  let market = `سعر غرام الذهب عيار 24 هسة ${fmtWhole(live24())} دينار`;
+  if (change.gt(0)) market += `، وارتفع ${m2(change)}% خلال 24 ساعة.`;
+  else if (change.lt(0)) market += `، ونزل ${m2(change.abs())}% خلال 24 ساعة.`;
+  else market += '.';
+  const parts = [market];
+  if (!budget) parts.push('حتى أقترح عليك عروض تناسبك، اختار ميزانيتك أو اكتبها.');
+  else if (!budget.confirmed)
+    parts.push(`فهمت إن ميزانيتك ${fmtWhole(D(budget.amount_iqd))} دينار، أكّدها حتى أطلعلك العروض المناسبة.`);
+  else if (suggestions.length) {
+    const best = suggestions[0];
+    parts.push(
+      `أنسب خيار لميزانيتك هو العرض 1: ${D(best.suggested_weight_grams).toString()} غرام عيار ${best.listing.karat} بإجمالي ${fmtWhole(D(best.estimated_total_iqd))} دينار شامل العمولة.`,
+      advisorRiskTip[profile]
+    );
+  } else parts.push(`${NO_MATCH}، جرّب ميزانية أكبر أو تصفح السوق بنفسك.`);
+  parts.push('تذكّر إن سعر الذهب ممكن ينزل مثل ما يصعد.');
+  return parts.join(' ');
+};
+
 const riskInsight = (): NonNullable<W.PreviewOut['risk_insight']> => {
   const change = change24hPct();
   const high = change.abs().gt(2);
@@ -652,51 +753,48 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
     if (user.role !== 'investor') return forbidden();
     const budget = D(String(body.budget_iqd ?? '0'));
     if (!budget.gt(0)) return invalid('budget_iqd', 'Input should be greater than 0');
-    const profile = user.risk_profile ?? 'medium';
-
-    const candidates = listings
-      .filter((l) => l.status === 'active')
-      .map((l) => {
-        const price = karatPriceNow(l.karat);
-        // Grams whose principal + commission fits the budget, capped by availability
-        let grams = budget.div(price.times(D(1).plus(commissionRate(budget.div(price)))));
-        grams = Decimal.min(grams, l.available).toDecimalPlaces(3, Decimal.ROUND_DOWN);
-        const b = breakdown(grams, price);
-        const usage = b.total.div(budget).times(100);
-        const preferred = preferredKarats[profile].includes(l.karat);
-        const score = Decimal.min(
-          1,
-          usage
-            .div(100)
-            .times(0.7)
-            .plus(preferred ? 0.3 : 0.1)
-        ).toDecimalPlaces(4);
-        return { l, price, grams, b, usage, score, preferred };
-      })
-      .filter((c) => c.grams.gte(MIN_MATCH_GRAMS))
-      .sort((a, b) => b.score.comparedTo(a.score) || b.usage.comparedTo(a.usage));
-
-    const results: W.MatchOut['results'] = candidates.map((c, i) => ({
-      rank: i + 1,
-      listing: listingOut(c.l),
-      suggested_weight_grams: g3(c.grams),
-      execution_price_per_gram: m2(c.price),
-      estimated_total_iqd: m2(c.b.total),
-      commission_rate: r4(c.b.rate),
-      budget_usage_pct: m2(c.usage),
-      score: r4(c.score),
-      reason: `${karatReason[c.l.karat]}${c.preferred ? ` ويناسب ملف مخاطرة ${riskName[profile]}` : ''}. يمكنك شراء ${g3(c.grams)} غرام بإجمالي ${m2(c.b.total)} دينار (${m2(c.usage)}% من ميزانيتك).`,
-    }));
-
+    const results = matchResults(user.risk_profile ?? 'medium', budget);
     return ok({
       budget_iqd: m2(budget).replace(/\.00$/, ''),
-      risk_profile: profile,
+      risk_profile: user.risk_profile ?? 'medium',
       engine: 'rules',
-      message: results.length
-        ? `وجدنا ${results.length} عروض مناسبة لميزانيتك`
-        : 'ماكو عروض تناسب هذي الميزانية حالياً',
+      message: results.length ? `وجدنا ${results.length} عروض مناسبة لميزانيتك` : NO_MATCH,
       results,
     } satisfies W.MatchOut);
+  }
+
+  // Same rules as the server (API_CONTRACT AI Advisor): the mock always answers with "rules"
+  if (method === 'POST' && path === '/api/ai/advisor') {
+    if (!user) return unauthorized();
+    if (user.role !== 'investor') return forbidden();
+    const question = String(body.question ?? '').trim();
+    if (!question || question.length > 500) return invalid('question', 'question must be 1 to 500 characters');
+    const profile = user.risk_profile ?? 'medium';
+
+    let budget: W.AdvisorOut['budget'] = null;
+    if (body.budget_iqd !== undefined && body.budget_iqd !== null) {
+      const amount = D(String(body.budget_iqd));
+      if (!amount.gt(0)) return invalid('budget_iqd', 'Input should be greater than 0');
+      budget = { amount_iqd: amount.toString(), source: 'request', confirmed: true };
+    } else {
+      const guess = parseAdvisorBudget(question);
+      if (guess) budget = { ...guess, confirmed: guess.source === 'question_digits' };
+    }
+    const suggestions = budget?.confirmed ? matchResults(profile, D(budget.amount_iqd)) : [];
+
+    return ok({
+      engine: 'rules',
+      answer: advisorAnswer(profile, budget, suggestions),
+      budget,
+      suggestions,
+      market_snapshot: {
+        price_24k_per_gram: m2(live24()),
+        change_24h_pct: m2(change24hPct()),
+        updated_at: iso(lastUpdated),
+        is_stale: false,
+      },
+      disclaimer: ADVISOR_DISCLAIMER,
+    } satisfies W.AdvisorOut);
   }
 
   if (method === 'POST' && path === '/api/ai/risk-analysis') {

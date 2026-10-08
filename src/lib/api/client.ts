@@ -7,6 +7,7 @@ import type * as W from './wire';
 import {
   gramsOut,
   iqdOut,
+  toAdvisor,
   toConfirmResult,
   toInsights,
   toListing,
@@ -134,6 +135,16 @@ export const api = {
       })
     ),
   getAiInsights: async () => toInsights(await request<W.InsightsOut>('GET', '/api/ai/insights')),
+  // Each question is independent: no history is sent (privacy, API_CONTRACT AI Advisor)
+  askAdvisor: async (question: string, budgetIqd?: number) =>
+    toAdvisor(
+      await request<W.AdvisorOut>('POST', '/api/ai/advisor', {
+        body: {
+          question,
+          ...(budgetIqd !== undefined ? { budget_iqd: iqdOut(budgetIqd) } : {}),
+        } satisfies W.AdvisorIn,
+      })
+    ),
   riskAnalysis: async (assetId: string, grams: number) =>
     toRiskAnalysis(
       await request<W.RiskAnalysisOut>('POST', '/api/ai/risk-analysis', {

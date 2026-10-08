@@ -2,6 +2,7 @@
 // Navigation per role (UI Kit 08-ux §2.2), shared by the sidebar and the mobile tab bar.
 
 import {
+  ChatCircleTextIcon,
   Icon,
   SquaresFourIcon,
   StorefrontIcon,
@@ -40,6 +41,7 @@ const investorPrimary: NavItem[] = [
 ];
 
 const investorSecondary: NavItem[] = [
+  { to: '/app/advisor', label: nav.advisor, icon: ChatCircleTextIcon },
   { to: '/app/transactions', label: nav.transactions, icon: ClockCounterClockwiseIcon, mirror: true },
   { to: '/app/insights', label: nav.premium, icon: CrownIcon, premium: true },
 ];

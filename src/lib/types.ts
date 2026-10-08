@@ -198,6 +198,33 @@ export interface MatchResponse {
   results: MatchResult[];
 }
 
+// POST /api/ai/advisor (API_CONTRACT §4 AI Advisor)
+export interface AdvisorBudget {
+  amount_iqd: number;
+  // request = sent as budget_iqd; question_digits / question_words = read from the question
+  source: 'request' | 'question_digits' | 'question_words';
+  // false = read from words: no suggestion until the user confirms it
+  confirmed: boolean;
+}
+
+export interface AdvisorAnswer {
+  // llm = worded by the model; rules = the simplified rule-based answer
+  engine: AiEngine;
+  answer: string;
+  budget: AdvisorBudget | null;
+  // From the matcher (same as /api/ai/match), never from the model text
+  suggestions: MatchResult[];
+  market: {
+    price_24k_per_gram: number;
+    // Fraction (0.0116 = +1.16%); null until the server has 24h of history
+    change_24h_pct: number | null;
+    updated_at: string;
+    is_stale: boolean;
+  };
+  // Always shown under the answer
+  disclaimer: string;
+}
+
 export interface MarketTrend {
   price_24k_per_gram: number;
   change_24h_pct: number | null;

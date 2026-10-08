@@ -244,6 +244,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/ai/advisor': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** AI Advisor (free): an Arabic answer to a question + offers from the matcher */
+    post: operations['ai_advisor_api_ai_advisor_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/transactions/preview': {
     parameters: {
       query?: never;
@@ -401,6 +418,72 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /** AdvisorBudget */
+    AdvisorBudget: {
+      /** Amount Iqd */
+      amount_iqd: string;
+      /**
+       * Source
+       * @enum {string}
+       */
+      source: 'request' | 'question_digits' | 'question_words';
+      /**
+       * Confirmed
+       * @description False when read from words in the question: no suggestion until the user confirms by sending the amount as budget_iqd
+       */
+      confirmed: boolean;
+    };
+    /** AdvisorIn */
+    AdvisorIn: {
+      /**
+       * Question
+       * @example شنو أحسن شي أشتريه هسة؟
+       */
+      question: string;
+      /**
+       * Budget Iqd
+       * @description Wins over any amount written in the question
+       */
+      budget_iqd?: (number | string) | null;
+    };
+    /** AdvisorMarket */
+    AdvisorMarket: {
+      /** Price 24K Per Gram */
+      price_24k_per_gram: string;
+      /** Change 24H Pct */
+      change_24h_pct: string | null;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Is Stale */
+      is_stale: boolean;
+    };
+    /** AdvisorOut */
+    AdvisorOut: {
+      /**
+       * Engine
+       * @description llm = worded by the model; rules = rule-based answer
+       * @enum {string}
+       */
+      engine: 'rules' | 'llm';
+      /** Answer */
+      answer: string;
+      /** @description null when no budget was given or found */
+      budget: components['schemas']['AdvisorBudget'] | null;
+      /**
+       * Suggestions
+       * @description From the rule-based matcher (same as /api/ai/match), never from the model
+       */
+      suggestions: components['schemas']['MatchResult'][];
+      market_snapshot: components['schemas']['AdvisorMarket'];
+      /**
+       * Disclaimer
+       * @description Always shown under the answer
+       */
+      disclaimer: string;
+    };
     /** CommissionTier */
     CommissionTier: {
       /** Label */
@@ -2022,6 +2105,75 @@ export interface operations {
       };
       /** @description Error */
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  ai_advisor_api_ai_advisor_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdvisorIn'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdvisorOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      422: {
         headers: {
           [name: string]: unknown;
         };

@@ -8,6 +8,7 @@ import {
   toListing,
   toMarketPrices,
   toMatch,
+  toAdvisor,
   toOwnership,
   toPreview,
   toServerConfig,
@@ -92,6 +93,39 @@ describe('incoming values', () => {
     expect(match.results[0].budget_usage_pct).toBe(1);
     expect(match.results[0].score).toBe(1);
     expect(match.results[0].commission_rate).toBe(0.015);
+  });
+
+  it('maps the advisor: suggestions like match results, budget and percentages as numbers', () => {
+    const a = toAdvisor({
+      engine: 'llm',
+      answer: 'جواب',
+      budget: { amount_iqd: '2000000', source: 'question_words', confirmed: false },
+      suggestions: [
+        {
+          rank: 1,
+          listing,
+          suggested_weight_grams: '12.535',
+          execution_price_per_gram: '157193.00',
+          estimated_total_iqd: '1999972.00',
+          commission_rate: '0.0100',
+          budget_usage_pct: '100.00',
+          score: '0.9500',
+          reason: 'r',
+        },
+      ],
+      market_snapshot: {
+        price_24k_per_gram: '179649.00',
+        change_24h_pct: '0.84',
+        updated_at: '2026-10-08T08:00:00Z',
+        is_stale: false,
+      },
+      disclaimer: 'd',
+    });
+    expect(a.budget).toEqual({ amount_iqd: 2_000_000, source: 'question_words', confirmed: false });
+    expect(a.suggestions[0].suggested_weight_grams).toBe(12.535);
+    expect(a.suggestions[0].budget_usage_pct).toBe(1);
+    expect(a.market.change_24h_pct).toBeCloseTo(0.0084);
+    expect(a.disclaimer).toBe('d');
   });
 
   it('keeps the quote token, its expiry and a null risk insight with its note', () => {
