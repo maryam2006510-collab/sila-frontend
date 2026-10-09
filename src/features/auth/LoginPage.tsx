@@ -122,6 +122,12 @@ export const LoginPage: React.FC = () => {
             }
             {...register('password')}
           />
+          <Link
+            to="/forgot-password"
+            className="-mt-2 self-start text-sm font-medium text-fg-link hover:text-fg-link-hover"
+          >
+            {t.password.forgotLink}
+          </Link>
 
           <Button type="submit" variant="accent" size="lg" loading={login.isPending} disabled={lockedFor > 0} fullWidth>
             {t.auth.login}

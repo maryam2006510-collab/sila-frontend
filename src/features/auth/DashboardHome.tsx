@@ -153,7 +153,9 @@ const InvestorDashboard: React.FC<{ user: User; prices: MarketPrices }> = ({ use
           label={d.kpiTransactions}
           icon={ClockCounterClockwiseIcon}
           status={dataStatus(txQuery)}
-          value={<Num value={transactions.length} format="plain" standalone countUp />}
+          value={
+            <Num value={transactions.filter((tx) => tx.side === 'buy').length} format="plain" standalone countUp />
+          }
           deltaLabel={d.kpiTransactionsHelper}
         />
         <KpiCard
@@ -269,12 +271,14 @@ const RecentRow: React.FC<{ tx: Transaction }> = ({ tx }) => {
     <li className="flex items-center justify-between gap-3 min-h-16 py-2">
       <div className="min-w-0">
         <p className="m-0 text-body font-medium text-fg">
+          {tx.side === 'sell' && <span className="text-fg-muted">{t.history.sideSell} · </span>}
           <Num value={tx.purchased_weight_grams} format="grams" /> · {t.units.karat(tx.karat)}
         </p>
         <p className="m-0 text-sm text-fg-subtle truncate">{fmtDate(tx.created_at)}</p>
       </div>
       <p className="m-0 text-body font-medium text-fg shrink-0">
-        <Num value={tx.total_paid_by_investor} format="iqd" />
+        {/* A sale received the gold value; a purchase paid the total with commission */}
+        <Num value={tx.side === 'sell' ? tx.principal_amount : tx.total_paid_by_investor} format="iqd" />
       </p>
     </li>
   );

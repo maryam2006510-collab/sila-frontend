@@ -22,7 +22,28 @@ export const queryKeys = {
   ownership: ['ownership'] as const,
   subscription: ['subscription'] as const,
   insights: ['ai', 'insights'] as const,
+  notifications: ['notifications'] as const,
+  alerts: ['alerts'] as const,
+  myResales: ['ownership', 'resales'] as const,
 };
+
+// The topbar bell (in-app only): polled every minute and on window focus
+export const useNotifications = () => {
+  const hasSession = useSessionStore((s) => s.hasSession);
+  return useQuery({
+    queryKey: queryKeys.notifications,
+    queryFn: api.getNotifications,
+    enabled: hasSession,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  });
+};
+
+export const useAlerts = (enabled: boolean) =>
+  useQuery({ queryKey: queryKeys.alerts, queryFn: api.getAlerts, enabled });
+
+export const useMyResales = (enabled: boolean) =>
+  useQuery({ queryKey: queryKeys.myResales, queryFn: api.getMyResales, enabled });
 
 export const useMe = () => {
   const hasSession = useSessionStore((s) => s.hasSession);

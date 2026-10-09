@@ -15,6 +15,7 @@ import { ToastContainer } from '@/components/ui/Toast';
 import { toast } from '@/components/ui/toastStore';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { useMe, useMarketPrices } from '@/lib/queries';
+import { ForcedPasswordChange } from '@/features/auth/ChangePasswordForm';
 import { DEMO_ACCOUNTS, DEMO_PASSWORD, SHOW_DEMO_ACCOUNTS } from '@/lib/demoAccounts';
 import { transition } from '@/motion/tokens';
 import { useT } from '@/i18n';
@@ -71,6 +72,9 @@ export const AppLayout: React.FC = () => {
 
   // The role's other pages load in the background once this one is up (D35)
   useEffect(() => prefetchAppRoutes(user.role), [user.role]);
+
+  // Signed in with a temporary password from an admin: a new one comes before anything else
+  if (user.must_change_password) return <ForcedPasswordChange onLogout={handleLogout} />;
 
   return (
     <div className="min-h-screen bg-canvas text-fg flex">

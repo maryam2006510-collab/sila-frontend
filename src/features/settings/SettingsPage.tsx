@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Segmented } from '@/components/ui/Segmented';
 import { useAppContext } from '@/features/shell/appContext';
+import { ChangePasswordForm } from '@/features/auth/ChangePasswordForm';
 import { openKyc } from '@/features/kyc/kycStore';
 import { signOut } from '@/features/auth/session';
 import { useThemeStore, Theme } from '@/app/theme';
@@ -71,6 +72,12 @@ export const SettingsPage: React.FC = () => {
           </Row>
         </dl>
         <p className="m-0 text-sm text-fg-subtle">{t.auth.roleFixedNote}</p>
+      </Card>
+
+      <Card padding="normal" className="gap-3">
+        <h2 className="text-h4 font-semibold text-fg m-0">{t.password.changeTitle}</h2>
+        <p className="m-0 text-sm text-fg-subtle">{t.password.changeIntro}</p>
+        <ChangePasswordForm />
       </Card>
 
       <Card padding="normal" className="gap-3">

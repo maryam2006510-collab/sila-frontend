@@ -144,6 +144,14 @@ export const ListingDetailPage: React.FC = () => {
               >
                 {d.notActive}
               </p>
+            ) : listing.seller_id === user.id ? (
+              // My own resale offer: it can be managed from the portfolio, never bought (Workflow 09)
+              <p
+                role="status"
+                className="m-0 p-3 rounded-sm bg-muted border border-line-subtle text-body text-fg-muted"
+              >
+                {t.resale.ownListing}
+              </p>
             ) : isInvestor ? (
               <>
                 <MoneyInput

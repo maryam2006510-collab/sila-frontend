@@ -3,10 +3,11 @@
 // Solid canvas background (no blur in the app). KYC is not nagged here (08-ux §4 Screen 1.4).
 
 import React from 'react';
-import { MoonIcon, SunIcon, BellIcon } from '@phosphor-icons/react';
+import { MoonIcon, SunIcon } from '@phosphor-icons/react';
 import { Logo } from '@/components/ui/Logo';
 import { LivePriceChip } from '@/components/fin/LivePriceChip';
 import { useThemeStore } from '@/app/theme';
+import { NotificationsBell } from './NotificationsBell';
 import { MarketPrices } from '@/lib/types';
 import { useT } from '@/i18n';
 
@@ -55,11 +56,7 @@ export const Topbar: React.FC<TopbarProps> = ({ title, short, prices }) => {
           {theme === 'dark' ? <SunIcon size={20} /> : <MoonIcon size={20} />}
         </button>
 
-        <span className="hidden sm:contents">
-          <button type="button" aria-label={t.shell.notifications} title={t.shell.notifications} className={iconButton}>
-            <BellIcon size={20} />
-          </button>
-        </span>
+        <NotificationsBell buttonClassName={iconButton} />
       </div>
     </header>
   );

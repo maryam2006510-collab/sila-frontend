@@ -23,6 +23,17 @@ export const useLogin = () =>
     },
   });
 
+// A password change returns fresh tokens (every older session stops working): keep this one
+export const useChangePassword = () =>
+  useMutation({
+    mutationFn: async ({ current, next }: { current: string; next: string }) => {
+      const result = await api.changePassword(current, next);
+      useSessionStore.getState().signedIn(result.access_token, result.refresh_token);
+      queryClient.setQueryData(queryKeys.me, result.user);
+      return result;
+    },
+  });
+
 export const signOut = () => {
   useSessionStore.getState().signOut();
   usePendingActionStore.getState().clearPendingAction();

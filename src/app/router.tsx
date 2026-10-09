@@ -67,6 +67,10 @@ export const router = createBrowserRouter([
       { path: '/', lazy: () => import('@/features/landing/LandingPage').then((m) => ({ Component: m.LandingPage })) },
       { path: '/login', lazy: () => import('@/features/auth/LoginPage').then((m) => ({ Component: m.LoginPage })) },
       {
+        path: '/forgot-password',
+        lazy: () => import('@/features/auth/ForgotPasswordPage').then((m) => ({ Component: m.ForgotPasswordPage })),
+      },
+      {
         path: '/signup',
         lazy: () => import('@/features/auth/RoleSelectPage').then((m) => ({ Component: m.RoleSelectPage })),
       },

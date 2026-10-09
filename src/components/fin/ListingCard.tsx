@@ -78,6 +78,11 @@ export const ListingCard: React.FC<ListingCardProps> = ({
       <div className="flex items-center justify-between gap-2 h-8 shrink-0">
         <Chip karat={listing.karat} />
         {promoted && <Badge variant="promoted">{t.listing.promoted}</Badge>}
+        {listing.listing_type === 'investor_resale' && (
+          <Badge variant="info" icon={false}>
+            {t.resale.badge}
+          </Badge>
+        )}
       </div>
 
       {/* Title (h4, clamp 1) + seller row */}
