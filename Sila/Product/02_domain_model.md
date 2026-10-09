@@ -1,6 +1,8 @@
-# Document 2: Domain Model (v3 — Final)
+# Document 2: Domain Model (v4)
 
-منصة **صِلة (Sila)** — نموذج البيانات الكامل بعد كل التعديلات (v1 → v3).
+منصة **صِلة (Sila)** — نموذج البيانات الكامل بعد كل التعديلات (v1 → v4).
+
+> **v4 (2026-10-10):** إعادة بيع المستثمر بالسوق (Investor Resale). صِلة تبقى وسيط وما تشتري الذهب بنفسها: المستثمر يعرض جزء من رصيده، والعرض يدخل السوق مثل باقي العروض، ومستثمر ثاني يشتريه بنفس الـ Checkout. التغييرات معلّمة بـ **(v4)**.
 
 ## 1. Core Entities & Attributes
 
@@ -17,14 +19,15 @@
 *   **SubscriptionExpiryDate:** (TIMESTAMPTZ, Nullable) - تاريخ انتهاء اشتراك Premium الحالي (اشتراك شهري متجدد). كل ميزة Premium تفحص هذا التاريخ مباشرة، وليس `SubscriptionTier` لحاله.
 
 ### 1.2 AssetListing (العرض المالي - الذهب)
-يمثل الكمية الإجمالية اللي يعرضها البائع.
+يمثل الكمية الإجمالية المعروضة للبيع: من بائع، أو **(v4)** من مستثمر يعيد بيع جزء من رصيده.
 *   **AssetID:** (UUID) - المعرف الفريد للعرض.
-*   **SellerID:** (UUID) - مفتاح أجنبي (Foreign Key) يربط العرض بالبائع.
+*   **SellerID:** (UUID) - مفتاح أجنبي (Foreign Key) يربط العرض بصاحبه: البائع، أو المستثمر صاحب إعادة البيع **(v4)**.
+*   **ListingType:** (Enum: `SellerListing`, `InvestorResale`) **(v4)** - مصدر العرض (Default: `SellerListing`). `InvestorResale` يُعرض بالسوق بعلامة "إعادة بيع من مستثمر" وبدون اسم المستثمر.
 *   **TotalWeightGrams:** (Float) - الوزن الكلي المعروض للبيع.
 *   **AvailableWeightGrams:** (Float) - الوزن المتبقي والمتاح للشراء (يقل مع كل عملية).
 *   **Karat:** (Integer) - عيار الذهب (مثلاً 18، 21، 22، 24).
 *   **BasePricePerGram:** (Float) - السعر الابتدائي للغرام وقت إنشاء العرض (كمرجع، محسوب سيرفرياً حسب قاعدة تحويل العيار).
-*   **Status:** (Enum: `Active`, `SoldOut`, `Suspended`).
+*   **Status:** (Enum: `Active`, `SoldOut`, `Suspended`, `Withdrawn`). **(v4)** `Withdrawn` خاص بإعادة البيع: المستثمر سحب عرضه نهائياً، والكمية غير المباعة رجعت لرصيده المتاح. حالة نهائية.
 *   **IsPromoted:** (Boolean) - هل العرض مُدرَج بشكل مميز (Highlighted) - Default: `false`.
 *   **PromotionExpiryDate:** (DateTime, Nullable) - تاريخ انتهاء الإدراج المميز؛ `null` يعني العرض غير مُروَّج.
 
@@ -48,8 +51,15 @@
 *   **TotalAccumulatedGrams:** (Float) - مجموع ما يملكه المستثمر.
 *   **DigitalSignatureToken:** (String) - توقيع رقمي مشفر (Cryptographic Hash) يجمع بين (InvestorID + TotalGrams + Timestamp) لمنع أي تلاعب يدوي بالرصيد.
 
+**(v4) الرصيد حسب العيار والكمية المحجوزة (قيم مشتقة، مو أعمدة جديدة):**
+*   **HoldingsByKarat:** مجموع مشتريات المستثمر من كل عيار ناقص مجموع ما باعه بإعادة البيع من نفس العيار، محسوب من سجل `Transaction` الدائم. مجموعها لكل العيارات يساوي `TotalAccumulatedGrams`.
+*   **ReservedGrams(Karat):** مجموع `AvailableWeightGrams` لعروض إعادة البيع مالته بحالة `Active` أو `Suspended` من نفس العيار.
+*   **AvailableToResell(Karat)** = `HoldingsByKarat(Karat) − ReservedGrams(Karat)`.
+*   التوقيع الرقمي ما يتغير شكله: الكمية المحجوزة تبقى جزء من `TotalAccumulatedGrams` لحد ما تنباع فعلاً.
+
 ## 2. Entity Relationships
 *   **User (Seller)** 1 : N **AssetListing** (البائع يكدر يعرض أكثر من كمية ذهب).
+*   **User (Investor)** 1 : N **AssetListing** بنوع `InvestorResale` **(v4)** (المستثمر يكدر يعرض أكثر من جزء من رصيده، ودوره يبقى `Investor`).
 *   **User (Investor)** 1 : N **Transaction** (المستثمر يكدر يسوي أكثر من عملية شراء).
 *   **AssetListing** 1 : N **Transaction** (عرض الذهب الواحد ممكن يشترون منه أكثر من مستثمر).
 *   **User (Investor)** 1 : 1 **FractionalOwnershipRecord** (لكل مستثمر سجل ملكية واحد يتحدث مع كل عملية).
@@ -59,6 +69,14 @@
 *   **Validation:** لا يمكن إتمام الـ `Transaction` إذا كان `PurchasedWeightGrams` أكبر من `AvailableWeightGrams`.
 *   **State Change:** بمجرد ما يوصل `AvailableWeightGrams` إلى صفر، يتحول `Status` تلقائياً إلى `SoldOut`.
 *   **Security Rule:** أي تعديل على `TotalAccumulatedGrams` بدون إعادة توليد `DigitalSignatureToken` بمفتاح التشفير السري السيرفري، يعتبر اختراق والمنصة ترفض قراءة الرصيد.
+
+### 3.0 قواعد إعادة البيع **(v4)**
+*   **من يعرض:** مستثمر موثق (`KycVerified`) عنده رصيد موثّق (التحقق من التوقيع ينجح). دوره يبقى `Investor`.
+*   **الحد:** الكمية المعروضة `<= AvailableToResell(Karat)`. الكمية تنحجز (تدخل `ReservedGrams`) فلا يگدر يبيعها مرتين.
+*   **السعر:** يُحسب سيرفرياً بنفس قاعدة تحويل العيار (3.1)، مثل عروض البائعين. المستثمر ما يحدد سعره.
+*   **السحب:** المستثمر يسحب عرضه (`Withdrawn`) أي وقت، والكمية غير المباعة ترجع لـ `AvailableToResell`. الكمية المباعة ما ترجع.
+*   **الشراء من عرض إعادة بيع:** نفس الـ Checkout ونفس العمولة على المشتري. بنفس الـ DB Transaction الذرية: `TotalAccumulatedGrams` للبائع المستثمر ينقص، وللمشتري يزيد، وينعاد توقيع السجلين. المستثمر البائع يستلم `PrincipalAmount` كامل (دفع وهمي).
+*   **الحماية:** المستثمر ما يگدر يشتري من عرض إعادة البيع مالته.
 
 ### 3.1 قاعدة تحويل سعر العيار
 سعر الذهب العالمي (من الـ Live Price Engine) مبني على عيار 24. نطبق معامل تحويل ثابت:

@@ -13,6 +13,7 @@
 | 06 | `06-seller-listing.md` | إنشاء عرض، حساب السعر حسب العيار، الترويج المدفوع (وهمياً) |
 | 07 | `07-premium-subscription.md` | الاشتراك الشهري بـ Premium AI Insights |
 | 08 | `08-ownership-portfolio.md` | محفظة المستثمر (مع التحقق من التوقيع الرقمي) وسجل مبيعات البائع |
+| 09 | `09-investor-resale.md` | إعادة بيع المستثمر لجزء من رصيده بالسوق، وسحب العرض، ونقل الملكية عند الشراء |
 
-**مرجعية:** كل Workflow مبني على القرارات النهائية بمستندات Domain Model v3،
-Business Capabilities v4، System Design v1، وAPI Design v2.
+**مرجعية:** كل Workflow مبني على القرارات النهائية بمستندات Domain Model v4،
+Business Capabilities v5، System Design v1، وAPI Design v2.
