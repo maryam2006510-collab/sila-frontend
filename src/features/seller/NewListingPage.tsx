@@ -45,6 +45,7 @@ export const NewListingPage: React.FC = () => {
     id: 'preview',
     seller_id: user.id,
     seller_name: user.full_name,
+    listing_type: 'seller_listing',
     seller_verified: user.kyc_verified,
     total_weight_grams: weight,
     available_weight_grams: weight,

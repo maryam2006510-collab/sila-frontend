@@ -41,6 +41,7 @@ const SHARED = [
 const BY_ROLE: Record<UserRole, (() => Promise<unknown>)[]> = {
   investor: [load.match, load.advisor, load.checkout, load.portfolio, load.premium, load.insights],
   seller: [load.sellerListings, load.newListing, load.sellerListing, load.sales],
+  admin: [],
 };
 
 // After the first screen settles, fetch the role's other pages while the browser is idle, so

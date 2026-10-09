@@ -39,6 +39,7 @@ const listing: AssetListing = {
   id: '00000000-0000-4000-8200-000000000001',
   seller_id: 's1',
   seller_name: 'مجوهرات الكرّادة',
+  listing_type: 'seller_listing',
   seller_verified: true,
   karat: 21,
   total_weight_grams: 84.25,

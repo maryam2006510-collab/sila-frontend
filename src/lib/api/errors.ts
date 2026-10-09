@@ -22,6 +22,8 @@ export type ApiErrorCode =
   | 'AI_UNAVAILABLE'
   | 'PRICE_UNAVAILABLE'
   | 'INTERNAL_ERROR'
+  | 'ACCOUNT_DISABLED'
+  | 'INSUFFICIENT_HOLDINGS'
   // Client-side only: the request never reached the server
   | 'NETWORK_ERROR';
 

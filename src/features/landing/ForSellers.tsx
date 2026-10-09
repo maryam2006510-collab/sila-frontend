@@ -18,6 +18,7 @@ const exampleListing = (prices: MarketPrices, sellerName: string): AssetListing 
   id: 'example',
   seller_id: 'example',
   seller_name: sellerName,
+  listing_type: 'seller_listing',
   seller_verified: true,
   karat: 21,
   total_weight_grams: 100,
