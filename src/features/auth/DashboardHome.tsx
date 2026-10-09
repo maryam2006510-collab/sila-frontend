@@ -29,6 +29,7 @@ import { MoneyInput } from '@/components/ui/MoneyInput';
 import { Num } from '@/components/ui/Num';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useAppContext } from '@/features/shell/appContext';
+import { AdminOverview } from '@/features/admin/AdminOverview';
 import { useListings, useMyListings, useOwnership, useTransactions } from '@/lib/queries';
 import { holdingsValue, sumOf } from '@/lib/pricing';
 import { fmtAmountWords, fmtDate, fmtDateNumeric } from '@/lib/formatters';
@@ -373,6 +374,7 @@ const SellerDashboard: React.FC<{ prices: MarketPrices }> = ({ prices }) => {
 
 export const DashboardHome: React.FC = () => {
   const { user, prices } = useAppContext();
+  if (user.role === 'admin') return <AdminOverview />;
   return user.role === 'investor' ? (
     <InvestorDashboard user={user} prices={prices} />
   ) : (

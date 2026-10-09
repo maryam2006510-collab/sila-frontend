@@ -52,7 +52,14 @@ export const Topbar: React.FC<TopbarProps> = ({ title, short, prices }) => {
           <span className="w-g3 h-control-sm rounded-xs skeleton-loading" aria-hidden="true" />
         )}
 
-        <button type="button" onClick={toggleTheme} aria-label={themeLabel} title={themeLabel} className={iconButton}>
+        {/* Phones keep the bell here; the theme is one tap away in Settings (D39) */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={themeLabel}
+          title={themeLabel}
+          className={`${iconButton} max-sm:hidden`}
+        >
           {theme === 'dark' ? <SunIcon size={20} /> : <MoonIcon size={20} />}
         </button>
 

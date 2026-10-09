@@ -2,7 +2,11 @@
 // Navigation per role (UI Kit 08-ux §2.2), shared by the sidebar and the mobile tab bar.
 
 import {
+  BuildingsIcon,
   ChatCircleTextIcon,
+  KeyIcon,
+  ShieldCheckIcon,
+  UsersIcon,
   Icon,
   SquaresFourIcon,
   StorefrontIcon,
@@ -57,14 +61,33 @@ const sellerSecondary: NavItem[] = [{ to: '/app/market', label: nav.market, icon
 
 const settings: NavItem = { to: '/app/settings', label: nav.settings, icon: GearSixIcon };
 
+const adminPrimary: NavItem[] = [
+  { to: '/app', label: nav.dashboard, shortLabel: nav.home, icon: SquaresFourIcon, end: true },
+  { to: '/app/admin/users', label: nav.adminUsers, icon: UsersIcon },
+  { to: '/app/admin/listings', label: nav.adminListings, icon: StorefrontIcon },
+  { to: '/app/admin/password-requests', label: nav.adminRequests, shortLabel: nav.adminRequestsShort, icon: KeyIcon },
+];
+
+const adminSecondary: NavItem[] = [
+  { to: '/app/admin/audit', label: nav.adminAudit, icon: ShieldCheckIcon },
+  { to: '/app/admin/interest', label: nav.adminInterest, icon: BuildingsIcon },
+];
+
+const primaryBy: Record<UserRole, NavItem[]> = {
+  investor: investorPrimary,
+  seller: sellerPrimary,
+  admin: adminPrimary,
+};
+const secondaryBy: Record<UserRole, NavItem[]> = {
+  investor: investorSecondary,
+  seller: sellerSecondary,
+  admin: adminSecondary,
+};
+
 // Desktop sidebar: everything, settings last
-export const sidebarItems = (role: UserRole): NavItem[] =>
-  role === 'investor'
-    ? [...investorPrimary, ...investorSecondary, settings]
-    : [...sellerPrimary, ...sellerSecondary, settings];
+export const sidebarItems = (role: UserRole): NavItem[] => [...primaryBy[role], ...secondaryBy[role], settings];
 
 // Mobile tab bar: max 4 + "المزيد" (04-layout §9)
-export const tabBarItems = (role: UserRole): NavItem[] => (role === 'investor' ? investorPrimary : sellerPrimary);
+export const tabBarItems = (role: UserRole): NavItem[] => primaryBy[role];
 
-export const moreItems = (role: UserRole): NavItem[] =>
-  role === 'investor' ? [...investorSecondary, settings] : [...sellerSecondary, settings];
+export const moreItems = (role: UserRole): NavItem[] => [...secondaryBy[role], settings];

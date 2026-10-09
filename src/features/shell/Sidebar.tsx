@@ -157,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onSwitchRole }
                   )}
                 </p>
                 <p className="m-0 text-sm text-sidebar-fg-muted truncate">
-                  {isInvestor ? t.shell.roleInvestor : t.shell.roleSeller}
+                  {user.role === 'admin' ? t.shell.roleAdmin : isInvestor ? t.shell.roleInvestor : t.shell.roleSeller}
                   {!user.kyc_verified && ` · ${t.shell.notVerified}`}
                 </p>
               </div>

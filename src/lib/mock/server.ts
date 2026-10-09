@@ -857,8 +857,8 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
           notify(
             admin.id,
             'password_reset_request',
-            'طلب استرجاع كلمة سر',
-            `${account.full_name} (${email}) طلب كلمة سر جديدة.`,
+            'طلب استرجاع كلمة مرور',
+            `${account.full_name} (${email}) طلب كلمة مرور جديدة.`,
             '/app/admin/password-requests'
           );
         }
@@ -866,7 +866,7 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
     }
     return ok(
       {
-        message: 'إذا الإيميل مسجل عدنا، طلبك وصل لإدارة صِلة، وراح يتواصلون وياك بكلمة سر مؤقتة.',
+        message: 'إذا البريد الإلكتروني مسجل عدنا، طلبك وصل لإدارة صِلة، وراح يتواصلون وياك بكلمة مرور مؤقتة.',
       } satisfies W.MessageOut,
       202
     );
@@ -875,11 +875,11 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
   if (method === 'POST' && path === '/api/users/me/password') {
     if (!user) return unauthorized();
     if (body.current_password !== user.password) {
-      return fail(401, 'INVALID_CREDENTIALS', 'كلمة السر الحالية غير صحيحة');
+      return fail(401, 'INVALID_CREDENTIALS', 'كلمة المرور الحالية غير صحيحة');
     }
     const next = String(body.new_password ?? '');
     if (next.length < 8) return invalid('new_password', 'String should have at least 8 characters');
-    if (next === user.password) return fail(422, 'VALIDATION_ERROR', 'اختار كلمة سر جديدة تختلف عن الحالية');
+    if (next === user.password) return fail(422, 'VALIDATION_ERROR', 'اختار كلمة مرور جديدة تختلف عن الحالية');
     user.password = next;
     user.must_change_password = false;
     user.pwv = Date.now();
@@ -1567,8 +1567,8 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
       notify(
         u!.id,
         'password_reset',
-        'كلمة سر جديدة',
-        'إدارة صِلة أصدرت إلك كلمة سر مؤقتة. غيّرها أول ما تدخل.',
+        'كلمة مرور جديدة',
+        'إدارة صِلة أصدرت إلك كلمة مرور مؤقتة. غيّرها أول ما تدخل.',
         '/app/settings'
       );
       return ok({ user: adminUserOut(u!), temporary_password: temporary } satisfies W.TempPasswordOut);
