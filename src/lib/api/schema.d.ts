@@ -468,16 +468,34 @@ export interface components {
        * @enum {string}
        */
       engine: 'rules' | 'llm';
-      /** Answer */
+      /**
+       * Answer
+       * @description Plain Arabic text, no markdown and no dashes
+       */
       answer: string;
+      /**
+       * Show Figures
+       * @description The question is about prices, money, the budget or holdings: show the figures (market_snapshot, budget, holdings_grams) in their own panel under the answer
+       */
+      show_figures: boolean;
       /** @description null when no budget was given or found */
       budget: components['schemas']['AdvisorBudget'] | null;
+      /**
+       * Holdings Grams
+       * @description The investor's own verified balance
+       */
+      holdings_grams: string;
       /**
        * Suggestions
        * @description From the rule-based matcher (same as /api/ai/match), never from the model
        */
       suggestions: components['schemas']['MatchResult'][];
       market_snapshot: components['schemas']['AdvisorMarket'];
+      /**
+       * Follow Up Questions
+       * @description Up to 3 questions to offer next, fitted to this question (checked like the answer; rule-based ones when the model is not used)
+       */
+      follow_up_questions: string[];
       /**
        * Disclaimer
        * @description Always shown under the answer

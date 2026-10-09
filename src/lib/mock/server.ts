@@ -476,7 +476,7 @@ const matchResults = (profile: RiskProfile, budget: Decimal): W.MatchOut['result
       commission_rate: r4(c.b.rate),
       budget_usage_pct: m2(c.usage),
       score: r4(c.score),
-      reason: `${karatReason[c.l.karat]}${c.preferred ? ` ويناسب ملف مخاطرة ${riskName[profile]}` : ''}. يمكنك شراء ${g3(c.grams)} غرام بإجمالي ${m2(c.b.total)} دينار (${m2(c.usage)}% من ميزانيتك).`,
+      reason: `${karatReason[c.l.karat]}${c.preferred ? ` ويناسب ملف مخاطرة ${riskName[profile]}` : ''}. يمكنك شراء ${g3(c.grams)} غرام بإجمالي ${fmtWhole(c.b.total)} دينار (${m2(c.usage)}% من ميزانيتك).`,
     }));
 
 // A budget read from the advisor question, like app/modules/ai/budget.py (simplified): digits are
@@ -510,17 +510,46 @@ const parseAdvisorBudget = (
   return null;
 };
 
+// Like app/modules/ai/advisor.py: a question about money shows the figures panel
+const MONEY_TOPIC =
+  /سعر|اسعار|ذهب|عيار|غرام|شراء|اشتري|اشتر|بيع|استثمار|استثمر|ميزاني|مبلغ|فلوس|دينار|رصيد|محفظ|ربح|خسار|عرض|عروض|سوق|مليون|ملايين|الف|عمول|ادخار|انوع|تنويع|وقت مناسب/;
+const ADVISOR_OFF_TOPIC =
+  'هذا السؤال برا مواضيع الاستثمار بالذهب على صِلة. أكدر أساعدك بأسعار الذهب اليوم، وبعروض تناسب ميزانيتك وملفك الاستثماري.';
+type AdvisorState = 'off_topic' | 'missing' | 'needs_confirmation' | 'offers' | 'no_offers';
+const ADVISOR_FOLLOW_UPS: Record<AdvisorState, string[]> = {
+  off_topic: ['شنو أحسن عرض لميزانيتي؟', 'هل هسة وقت مناسب للشراء؟', 'شنو الفرق بين العيارات؟'],
+  missing: ['شنو الفرق بين عيار 21 وعيار 24؟', 'شلون تنحسب العمولة بصِلة؟', 'أشتري مرة وحدة لو على دفعات؟'],
+  needs_confirmation: ['شنو الفرق بين عيار 21 وعيار 24؟', 'شلون تنحسب العمولة بصِلة؟'],
+  offers: ['ليش العرض 1 هو الأنسب إلي؟', 'أقسّم شرائي على أكثر من مرة؟', 'شنو الفرق بين عيار 21 وعيار 24؟'],
+  no_offers: ['شلون أبدي بميزانية صغيرة؟', 'شنو العيار اللي يعطيني غرامات أكثر؟'],
+};
+
+const advisorState = (
+  moneyTopic: boolean,
+  budget: W.AdvisorOut['budget'],
+  suggestions: W.MatchOut['results']
+): AdvisorState => {
+  if (!moneyTopic) return 'off_topic';
+  if (!budget) return 'missing';
+  if (!budget.confirmed) return 'needs_confirmation';
+  return suggestions.length ? 'offers' : 'no_offers';
+};
+
 const advisorAnswer = (
+  state: AdvisorState,
   profile: RiskProfile,
   budget: W.AdvisorOut['budget'],
   suggestions: W.MatchOut['results']
 ): string => {
+  if (state === 'off_topic') return ADVISOR_OFF_TOPIC;
   const change = change24hPct();
-  let market = `سعر غرام الذهب عيار 24 هسة ${fmtWhole(live24())} دينار`;
-  if (change.gt(0)) market += `، وارتفع ${m2(change)}% خلال 24 ساعة.`;
-  else if (change.lt(0)) market += `، ونزل ${m2(change.abs())}% خلال 24 ساعة.`;
-  else market += '.';
-  const parts = [market];
+  const parts = [
+    change.gt(0)
+      ? 'الذهب ارتفع خلال آخر 24 ساعة.'
+      : change.lt(0)
+        ? 'الذهب نزل خلال آخر 24 ساعة.'
+        : 'سعر الذهب مستقر خلال آخر 24 ساعة.',
+  ];
   if (!budget) parts.push('حتى أقترح عليك عروض تناسبك، اختار ميزانيتك أو اكتبها.');
   else if (!budget.confirmed)
     parts.push(`فهمت إن ميزانيتك ${fmtWhole(D(budget.amount_iqd))} دينار، أكّدها حتى أطلعلك العروض المناسبة.`);
@@ -782,10 +811,14 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
     }
     const suggestions = budget?.confirmed ? matchResults(profile, D(budget.amount_iqd)) : [];
 
+    const moneyTopic = budget !== null || MONEY_TOPIC.test(question.replace(/[أإآ]/g, 'ا'));
+    const state = advisorState(moneyTopic, budget, suggestions);
     return ok({
       engine: 'rules',
-      answer: advisorAnswer(profile, budget, suggestions),
+      answer: advisorAnswer(state, profile, budget, suggestions),
+      show_figures: moneyTopic,
       budget,
+      holdings_grams: g3((ownership.get(user.id)?.grams ?? D(0)).toString()),
       suggestions,
       market_snapshot: {
         price_24k_per_gram: m2(live24()),
@@ -793,6 +826,7 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
         updated_at: iso(lastUpdated),
         is_stale: false,
       },
+      follow_up_questions: ADVISOR_FOLLOW_UPS[state],
       disclaimer: ADVISOR_DISCLAIMER,
     } satisfies W.AdvisorOut);
   }

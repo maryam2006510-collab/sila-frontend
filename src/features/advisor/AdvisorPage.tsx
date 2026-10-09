@@ -4,7 +4,8 @@
 // answer. Each question is independent: the thread stays on screen, but no history is sent.
 // Budget (decision 2026-10-08): the server reads it from the question. Words need the user's
 // confirmation and no budget offers quick choices; nothing is guessed here. Every figure shown
-// is the server's (adapters convert for display only, D21).
+// is the server's (adapters convert for display only, D21). The answer is plain text and the
+// live figures sit in their own panel (D38); the quick questions follow the latest answer.
 
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -13,11 +14,13 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { MoneyInput } from '@/components/ui/MoneyInput';
 import { fieldStateClasses } from '@/components/ui/fieldStyles';
-import { AiInsight } from '@/components/fin/AiInsight';
 import { AiThinking } from '@/components/fin/AiThinking';
 import { MatchResultCard } from '@/components/fin/MatchResultCard';
+import { useAppContext } from '@/features/shell/appContext';
+import { AdvisorFigures, AnswerText } from './AdvisorAnswer';
 import { api, errorMessage, hasErrorCode, isApiError } from '@/lib/api';
 import { useNow } from '@/lib/hooks';
+import { useOwnership } from '@/lib/queries';
 import { fmtAmountWords, fmtIQD } from '@/lib/formatters';
 import type { AdvisorAnswer } from '@/lib/types';
 import { useT } from '@/i18n';
@@ -123,15 +126,11 @@ const BudgetStep: React.FC<{ answer: AdvisorAnswer; disabled: boolean; onBudget:
     );
   }
 
+  // Confirmed: the amount shows in the figures panel; only the edit action stays here
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <p className="m-0 text-sm text-fg-subtle">
-        {s.budgetLine} <bdi className="num">{fmtIQD(budget.amount_iqd)}</bdi> {t.units.iqd}
-      </p>
-      <Button variant="ghost" size="md" disabled={disabled} onClick={() => setEditing(true)}>
-        {s.edit}
-      </Button>
-    </div>
+    <Button variant="ghost" size="md" className="self-start" disabled={disabled} onClick={() => setEditing(true)}>
+      {s.editBudget}
+    </Button>
   );
 };
 
@@ -176,7 +175,9 @@ const Exchange: React.FC<{
     const confirmed = answer.budget?.confirmed ?? false;
     body = (
       <div className="flex flex-col gap-5">
-        <AiInsight text={answer.answer} source={answer.engine === 'llm' ? s.sourceLlm : s.sourceRules} />
+        <AnswerText text={answer.answer} source={answer.engine === 'llm' ? s.sourceLlm : s.sourceRules} />
+
+        {answer.show_figures && <AdvisorFigures answer={answer} />}
 
         <BudgetStep answer={answer} disabled={lockedFor > 0} onBudget={(b) => onAsk(b)} />
 
@@ -238,6 +239,19 @@ export const AdvisorPage: React.FC = () => {
   const now = useNow(1_000);
   const lockedFor = Math.max(0, Math.ceil((lockedUntil - now) / 1_000));
   const busy = entries.some((e) => e.status === 'pending');
+
+  // Before any answer: fitted to the investor (holdings, risk profile). After one: the server's
+  // follow-up questions for it, so the suggestions move with the conversation.
+  const { user } = useAppContext();
+  const holdings = useOwnership(user.role).data?.total_accumulated_grams ?? 0;
+  const start = [
+    holdings > 0 ? s.quickStart.holder : s.quickStart.first,
+    s.quickStart.timing,
+    s.quickStart.byRisk[user.risk_profile ?? 'medium'],
+  ];
+  const latest = [...entries].reverse().find((e) => e.status === 'done')?.answer;
+  const followUps = latest?.follow_up_questions ?? [];
+  const quick = followUps.length > 0 ? followUps : start;
 
   const update = (id: number, patch: Partial<Entry>) =>
     setEntries((list) => list.map((e) => (e.id === id ? { ...e, ...patch } : e)));
@@ -334,9 +348,11 @@ export const AdvisorPage: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="m-0 text-sm font-medium text-fg-muted">{s.quickTitle}</p>
+            <p className="m-0 text-sm font-medium text-fg-muted">
+              {followUps.length > 0 ? s.suggestedTitle : s.quickTitle}
+            </p>
             <div className="flex flex-wrap gap-2">
-              {s.quick.map((q) => (
+              {quick.map((q) => (
                 <Button
                   key={q}
                   type="button"

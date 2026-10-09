@@ -322,7 +322,28 @@ export const ar = {
     // `n` characters typed out of `max`
     counter: (n: number, max: number) => `${n} / ${max}`,
     quickTitle: 'أسئلة جاهزة',
-    quick: ['شنو أحسن عرض لميزانيتي؟', 'هل هسة وقت مناسب للشراء؟', 'شلون أنوّع محفظتي؟'],
+    // After an answer the quick questions follow it (follow_up_questions from the server)
+    suggestedTitle: 'أسئلة مقترحة',
+    // Before any question: fitted to the investor (holdings and risk profile)
+    quickStart: {
+      first: 'شلون أبدي أول استثمار بالذهب؟',
+      holder: 'شلون أنوّع محفظتي؟',
+      timing: 'هل هسة وقت مناسب للشراء؟',
+      byRisk: {
+        low: 'شنو أأمن خيار لملفي المحافظ؟',
+        medium: 'شنو أحسن عرض لميزانيتي؟',
+        high: 'شنو العيار اللي يعطيني غرامات أكثر؟',
+      },
+    },
+    figuresTitle: 'بالأرقام',
+    price24: 'سعر غرام الذهب عيار 24',
+    yourBudget: 'ميزانيتك',
+    holdings: 'رصيدك الحالي',
+    holdingsEmpty: 'ما عندك ذهب بعد',
+    // `time` is already formatted
+    updatedAt: (time: string) => `آخر تحديث ${time}`,
+    stale: 'الأسعار مو محدّثة حالياً، هذا آخر سعر معروف.',
+    editBudget: 'تعديل الميزانية',
     addBudget: 'إضافة ميزانية (اختياري)',
     removeBudget: 'بدون ميزانية',
     budgetLabel: 'الميزانية بالدينار العراقي',
