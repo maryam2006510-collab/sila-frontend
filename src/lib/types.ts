@@ -210,8 +210,13 @@ export interface AdvisorBudget {
 export interface AdvisorAnswer {
   // llm = worded by the model; rules = the simplified rule-based answer
   engine: AiEngine;
+  // Plain text; the live figures are not repeated in it
   answer: string;
+  // About prices, money, the budget or holdings: show the figures panel
+  show_figures: boolean;
   budget: AdvisorBudget | null;
+  // The investor's own verified balance
+  holdings_grams: number;
   // From the matcher (same as /api/ai/match), never from the model text
   suggestions: MatchResult[];
   market: {
@@ -221,6 +226,8 @@ export interface AdvisorAnswer {
     updated_at: string;
     is_stale: boolean;
   };
+  // Up to 3 questions fitted to this one: they become the next quick questions
+  follow_up_questions: string[];
   // Always shown under the answer
   disclaimer: string;
 }

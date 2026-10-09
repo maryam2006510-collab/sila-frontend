@@ -165,6 +165,8 @@ export const toMatch = (m: W.MatchOut): MatchResponse => ({
 export const toAdvisor = (a: W.AdvisorOut): AdvisorAnswer => ({
   engine: a.engine,
   answer: a.answer,
+  show_figures: a.show_figures,
+  holdings_grams: num(a.holdings_grams),
   budget: a.budget
     ? { amount_iqd: num(a.budget.amount_iqd), source: a.budget.source, confirmed: a.budget.confirmed }
     : null,
@@ -175,6 +177,7 @@ export const toAdvisor = (a: W.AdvisorOut): AdvisorAnswer => ({
     updated_at: a.market_snapshot.updated_at,
     is_stale: a.market_snapshot.is_stale,
   },
+  follow_up_questions: a.follow_up_questions,
   disclaimer: a.disclaimer,
 });
 

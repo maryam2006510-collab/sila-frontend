@@ -99,6 +99,8 @@ describe('incoming values', () => {
     const a = toAdvisor({
       engine: 'llm',
       answer: 'جواب',
+      show_figures: true,
+      holdings_grams: '65.500',
       budget: { amount_iqd: '2000000', source: 'question_words', confirmed: false },
       suggestions: [
         {
@@ -119,8 +121,11 @@ describe('incoming values', () => {
         updated_at: '2026-10-08T08:00:00Z',
         is_stale: false,
       },
+      follow_up_questions: ['سؤال؟'],
       disclaimer: 'd',
     });
+    expect(a.holdings_grams).toBe(65.5);
+    expect(a.follow_up_questions).toEqual(['سؤال؟']);
     expect(a.budget).toEqual({ amount_iqd: 2_000_000, source: 'question_words', confirmed: false });
     expect(a.suggestions[0].suggested_weight_grams).toBe(12.535);
     expect(a.suggestions[0].budget_usage_pct).toBe(1);
