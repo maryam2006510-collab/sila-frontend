@@ -17,16 +17,15 @@ import { useMirrored } from '@/lib/direction';
 import { noOrphan } from '@/lib/noOrphan';
 import { useSessionStore } from '@/lib/session';
 import { RiskProfile, UserRole } from '@/lib/types';
-import { t as messages, useT } from '@/i18n';
+import { useT, Messages } from '@/i18n';
 import { AuthShell } from './AuthShell';
 import { useLogin } from './session';
 
 // Contract §4: password 8 to 72 characters
 const MIN_PASSWORD = 8;
 const MAX_PASSWORD = 72;
-const v = messages.auth.validation;
-
-const schemaFor = (role: UserRole) =>
+// Built on every render from the current language's messages
+const schemaFor = (role: UserRole, v: Messages['auth']['validation']) =>
   z
     .object({
       full_name: z.string().trim().min(1, v.nameRequired),
@@ -64,7 +63,7 @@ export const SignupPage: React.FC = () => {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<SignupForm>({
-    resolver: zodResolver(schemaFor(userRole ?? 'investor')),
+    resolver: zodResolver(schemaFor(userRole ?? 'investor', t.auth.validation)),
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
@@ -97,7 +96,7 @@ export const SignupPage: React.FC = () => {
       } else if (hasErrorCode(err, 'NETWORK_ERROR')) {
         setFormError(t.auth.networkError);
       } else {
-        setFormError(isApiError(err) && err.message ? err.message : t.auth.unexpectedError);
+        setFormError(errorMessage(err, t.auth.unexpectedError));
       }
       return;
     }

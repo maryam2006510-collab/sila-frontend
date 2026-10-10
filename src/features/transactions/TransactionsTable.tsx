@@ -1,7 +1,8 @@
 // src/features/transactions/TransactionsTable.tsx
 // Transaction history per UI Kit 06-style §5.5 & 08-ux §11: table on desktop, 2-line rows on
 // mobile, row → receipt (GET /api/transactions/{id}). Investors see what they paid, sellers
-// what they received.
+// what they received. An investor's history also holds their resale sales (side: sell, D40):
+// each row says buy or sell, the other party and the amount paid or received.
 
 import React, { useState } from 'react';
 import { WarningOctagonIcon } from '@phosphor-icons/react';
@@ -25,6 +26,9 @@ interface TransactionsTableProps {
   emptyMessage?: string;
 }
 
+// Paid for a purchase (gold + commission), received for a sale (the gold value)
+const amountOf = (tx: Transaction) => (tx.side === 'sell' ? tx.principal_amount : tx.total_paid_by_investor);
+
 const ReceiptDialog: React.FC<{ id: string | null; viewer: UserRole; onClose: () => void }> = ({
   id,
   viewer,
@@ -36,7 +40,7 @@ const ReceiptDialog: React.FC<{ id: string | null; viewer: UserRole; onClose: ()
   return (
     <Dialog isOpen={Boolean(id)} onClose={onClose} size="md" title={t.receipt.title}>
       {txQuery.data ? (
-        <ReceiptDetails tx={txQuery.data} viewer={viewer} />
+        <ReceiptDetails tx={txQuery.data} viewer={txQuery.data.side === 'sell' ? 'seller' : viewer} />
       ) : txQuery.isError ? (
         <div className="flex flex-col items-center gap-3 py-5 text-center">
           <WarningOctagonIcon size={32} weight="fill" className="text-danger-fg" aria-hidden="true" />
@@ -75,9 +79,26 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
       header: h.colDate,
       render: (tx) => <span className="text-sm text-fg-muted">{fmtDate(tx.created_at)}</span>,
     },
-    isInvestor
-      ? { key: 'seller', header: h.colSeller, render: (tx) => tx.seller_name }
-      : { key: 'buyer', header: h.colBuyer, render: (tx) => tx.buyer_ref ?? t.receipt.buyerAnonymous },
+    ...(isInvestor
+      ? ([
+          {
+            key: 'side',
+            header: h.colSide,
+            render: (tx) => (
+              <span className={tx.side === 'sell' ? 'font-semibold text-fg' : 'text-fg-muted'}>
+                {tx.side === 'sell' ? h.sideSell : h.sideBuy}
+              </span>
+            ),
+          },
+          {
+            key: 'party',
+            header: h.colParty,
+            render: (tx) => (tx.side === 'sell' ? (tx.buyer_ref ?? t.receipt.buyerAnonymous) : tx.seller_name),
+          },
+        ] satisfies Column<Transaction>[])
+      : ([
+          { key: 'buyer', header: h.colBuyer, render: (tx) => tx.buyer_ref ?? t.receipt.buyerAnonymous },
+        ] satisfies Column<Transaction>[])),
     { key: 'karat', header: h.colKarat, render: (tx) => t.units.karat(tx.karat) },
     {
       key: 'grams',
@@ -97,13 +118,14 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
             key: 'commission',
             header: h.colCommission,
             align: 'end',
-            render: (tx) => <Num value={tx.commission_amount} format="iqd" />,
+            // The buyer pays the commission: a sale shows none
+            render: (tx) => (tx.side === 'sell' ? null : <Num value={tx.commission_amount} format="iqd" />),
           },
           {
             key: 'total',
-            header: h.colTotal,
+            header: h.colAmount,
             align: 'end',
-            render: (tx) => <Num value={tx.total_paid_by_investor} format="iqd" />,
+            render: (tx) => <Num value={amountOf(tx)} format="iqd" />,
           },
         ] satisfies Column<Transaction>[])
       : ([
@@ -149,9 +171,10 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
             >
               <span className="flex flex-col min-w-0">
                 <span className="text-body font-semibold text-fg">
-                  <Num value={isInvestor ? tx.total_paid_by_investor : tx.principal_amount} format="iqd" />
+                  <Num value={isInvestor ? amountOf(tx) : tx.principal_amount} format="iqd" />
                 </span>
                 <span className="text-sm text-fg-subtle truncate">
+                  {isInvestor && tx.side === 'sell' && `${h.sideSell} · `}
                   {fmtDate(tx.created_at)} · {t.units.karat(tx.karat)}
                 </span>
               </span>

@@ -54,6 +54,7 @@
   5. تحديث (أو إنشاء لو أول عملية) `FractionalOwnershipRecord`:
      - `total_accumulated_grams += purchased_weight_grams`
      - توليد `digital_signature_token` جديد = HMAC-SHA256(`investor_id + total_accumulated_grams + timestamp`) بمفتاح سري سيرفري.
+  5-ب. **(إعادة بيع)** إذا العرض نوعه `InvestorResale`: التحقق من توقيع سجل المستثمر البائع، وبعدين `total_accumulated_grams -= purchased_weight_grams` له وإعادة توقيعه، بنفس الـ DB Transaction. المشتري لازم يكون غير صاحب العرض. راجع `09-investor-resale.md`.
   6. الـ DB Transaction تُثبَّت (Commit) دفعة وحدة — لو أي خطوة فشلت، الكل يترجع (Rollback) بدون أي تغيير جزئي.
 
 ### 5. شاشة النجاح
@@ -65,7 +66,7 @@
 - `Transaction` جديد مسجل (Audit trail دائم — ما ينحذف أبداً).
 - `FractionalOwnershipRecord` محدّث بتوقيع رقمي جديد.
 - `AssetListing.AvailableWeightGrams` محدّث (وربما `Status = SoldOut`).
-- البائع يستلم `principal_amount` كامل بدون خصم (العمولة مصدرها المستثمر فقط).
+- البائع (أو المستثمر صاحب إعادة البيع) يستلم `principal_amount` كامل بدون خصم (العمولة مصدرها المشتري فقط).
 
 ## حالات الخطأ
 | الحالة | error_code | السلوك |

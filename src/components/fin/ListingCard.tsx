@@ -15,7 +15,7 @@ import { Sparkline } from './Sparkline';
 import { AssetListing } from '@/lib/types';
 import { useNow } from '@/lib/hooks';
 import { usePriceHistory } from '@/lib/queries';
-import { isPromotedAt } from '@/lib/status';
+import { isPromotedAt, sellerLabel } from '@/lib/status';
 import { useT } from '@/i18n';
 
 interface ListingCardProps {
@@ -78,10 +78,15 @@ export const ListingCard: React.FC<ListingCardProps> = ({
       <div className="flex items-center justify-between gap-2 h-8 shrink-0">
         <Chip karat={listing.karat} />
         {promoted && <Badge variant="promoted">{t.listing.promoted}</Badge>}
+        {listing.listing_type === 'investor_resale' && (
+          <Badge variant="info" icon={false}>
+            {t.resale.badge}
+          </Badge>
+        )}
       </div>
 
       {/* Title (h4, clamp 1) + seller row */}
-      <h4 className="mt-3 text-h4 font-semibold text-fg truncate m-0" title={title}>
+      <h4 className="mt-3 shrink-0 text-h4 font-semibold text-fg truncate m-0" title={title}>
         {title}
       </h4>
       <div className="flex items-center gap-2 text-sm text-fg-muted min-w-0 h-6">
@@ -89,8 +94,8 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <SealCheckIcon size={16} weight="fill" className="text-line-focus shrink-0" aria-hidden="true" />
         )}
         <span className="text-fg-subtle shrink-0">{t.listing.seller}</span>
-        <span className="font-medium truncate" title={listing.seller_name}>
-          {listing.seller_name}
+        <span className="font-medium truncate" title={sellerLabel(listing, t.resale.sellerLabel)}>
+          {sellerLabel(listing, t.resale.sellerLabel)}
         </span>
       </div>
 

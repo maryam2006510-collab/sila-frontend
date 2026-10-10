@@ -50,6 +50,7 @@ describe('incoming values', () => {
     id: '34e2d700-2ba4-48a9-944b-f0fa4c0cd904',
     seller_id: '44a4a5a6-7f8b-4510-9a6c-2ecd617b88c5',
     seller_name: 'مجوهرات الكرّادة',
+    listing_type: 'seller_listing',
     seller_kyc_verified: true,
     karat: 21,
     total_weight_grams: '84.250',

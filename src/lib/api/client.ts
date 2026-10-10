@@ -5,6 +5,13 @@
 import { request, toQuery } from './http';
 import type * as W from './wire';
 import {
+  toAdminOverview,
+  toAdminUser,
+  toAlert,
+  toAuditEntry,
+  toInterestSignup,
+  toNotifications,
+  toResetRequest,
   gramsOut,
   iqdOut,
   toAdvisor,
@@ -27,8 +34,12 @@ import {
 } from './adapters';
 import type {
   AssetListing,
+  AlertDirection,
   ChartRange,
+  InterestAssetClass,
   Karat,
+  ListingType,
+  ResetRequestStatus,
   ListingFilters,
   ListingStatus,
   LoginRequest,
@@ -189,4 +200,125 @@ export const api = {
 
   // System (public)
   getConfig: async () => toServerConfig(await request<W.PublicConfigOut>('GET', '/api/config', { auth: false })),
+
+  // Passwords (forgot: handled by an admin, no e-mail)
+  forgotPassword: async (email: string) =>
+    (
+      await request<W.MessageOut>('POST', '/api/auth/forgot-password', {
+        body: { email } satisfies W.ForgotPasswordIn,
+        auth: false,
+      })
+    ).message,
+  // Returns fresh tokens (every older session stops working)
+  changePassword: async (currentPassword: string, newPassword: string) =>
+    toLoginResult(
+      await request<W.LoginOut>('POST', '/api/users/me/password', {
+        body: { current_password: currentPassword, new_password: newPassword } satisfies W.ChangePasswordIn,
+      })
+    ),
+
+  // Investor resale (Workflow 09)
+  createResale: async (karatValue: Karat, grams: number, idempotencyKey: string) =>
+    toListing(
+      await request<W.ListingOut>('POST', '/api/ownership/resale', {
+        body: { karat: karatValue, weight_grams: gramsOut(grams) } satisfies W.ResaleIn,
+        headers: { 'Idempotency-Key': idempotencyKey },
+      })
+    ),
+  getMyResales: async () => (await request<W.ListingOut[]>('GET', '/api/ownership/resale')).map(toListing),
+  setResaleStatus: async (id: string, status: 'active' | 'suspended' | 'withdrawn') =>
+    toListing(
+      await request<W.ListingOut>('PATCH', `/api/ownership/resale/${encodeURIComponent(id)}`, {
+        body: { status } satisfies W.ResaleStatusIn,
+      })
+    ),
+
+  // Notifications (any signed-in user)
+  getNotifications: async () => toNotifications(await request<W.NotificationsOut>('GET', '/api/notifications')),
+  markNotificationsRead: async (ids?: string[]) =>
+    toNotifications(
+      await request<W.NotificationsOut>('POST', '/api/notifications/read', {
+        body: (ids?.length ? { ids } : {}) satisfies W.MarkReadIn,
+      })
+    ),
+
+  // Premium price alerts
+  getAlerts: async () => (await request<W.AlertOut[]>('GET', '/api/alerts')).map(toAlert),
+  createAlert: async (karatValue: Karat, direction: AlertDirection, target: number) =>
+    toAlert(
+      await request<W.AlertOut>('POST', '/api/alerts', {
+        body: { karat: karatValue, direction, target_price_per_gram: iqdOut(target) } satisfies W.AlertIn,
+      })
+    ),
+  cancelAlert: async (id: string) =>
+    toAlert(
+      await request<W.AlertOut>('PATCH', `/api/alerts/${encodeURIComponent(id)}`, {
+        body: { status: 'cancelled' } satisfies W.AlertStatusIn,
+      })
+    ),
+
+  // Coming soon (public)
+  registerInterest: async (email: string, assetClass: InterestAssetClass) =>
+    (
+      await request<W.InterestReplyOut>('POST', '/api/interest', {
+        body: { email, asset_class: assetClass } satisfies W.InterestIn,
+        auth: false,
+      })
+    ).message,
+
+  // Administration (admin only)
+  admin: {
+    overview: async () => toAdminOverview(await request<W.OverviewOut>('GET', '/api/admin/overview')),
+    users: async (q: string, role: UserRole | undefined, offset = 0) =>
+      toPage(
+        await request<W.PageAdminUserOut>(
+          'GET',
+          `/api/admin/users${toQuery({ q: q || undefined, role, limit: 20, offset })}`
+        ),
+        toAdminUser
+      ),
+    updateUser: async (id: string, patch: { is_active?: boolean; kyc_verified?: boolean }) =>
+      toAdminUser(
+        await request<W.AdminUserOut>('PATCH', `/api/admin/users/${encodeURIComponent(id)}`, {
+          body: patch satisfies W.AdminUserPatch,
+        })
+      ),
+    resetPassword: async (id: string) => {
+      const out = await request<W.TempPasswordOut>('POST', `/api/admin/users/${encodeURIComponent(id)}/reset-password`);
+      return { user: toAdminUser(out.user), temporary_password: out.temporary_password };
+    },
+    listings: async (status: ListingStatus | undefined, listingType: ListingType | undefined, offset = 0) =>
+      toPage(
+        await request<W.PageListingOut>(
+          'GET',
+          `/api/admin/listings${toQuery({ status, listing_type: listingType, limit: 20, offset })}`
+        ),
+        toListing
+      ),
+    moderateListing: async (id: string, status: 'active' | 'suspended') =>
+      toListing(
+        await request<W.ListingOut>('PATCH', `/api/admin/listings/${encodeURIComponent(id)}`, {
+          body: { status } satisfies W.AdminListingPatch,
+        })
+      ),
+    passwordRequests: async (status: ResetRequestStatus) =>
+      (await request<W.ResetRequestOut[]>('GET', `/api/admin/password-requests${toQuery({ status })}`)).map(
+        toResetRequest
+      ),
+    dismissPasswordRequest: async (id: string) =>
+      toResetRequest(
+        await request<W.ResetRequestOut>('PATCH', `/api/admin/password-requests/${encodeURIComponent(id)}`, {
+          body: { status: 'dismissed' } satisfies W.ResetRequestPatch,
+        })
+      ),
+    audit: async (eventType: string | undefined, offset = 0) =>
+      toPage(
+        await request<W.PageAuditOut>(
+          'GET',
+          `/api/admin/audit${toQuery({ event_type: eventType || undefined, limit: 50, offset })}`
+        ),
+        toAuditEntry
+      ),
+    interest: async () => (await request<W.InterestSignupOut[]>('GET', '/api/admin/interest')).map(toInterestSignup),
+  },
 };

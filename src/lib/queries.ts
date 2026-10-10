@@ -4,7 +4,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { api } from './api';
 import { useSessionStore } from './session';
-import { ChartRange, Karat, ListingFilters, UserRole } from './types';
+import { ChartRange, Karat, ListingFilters, ListingStatus, ListingType, ResetRequestStatus, UserRole } from './types';
 
 // Market page size (contract §1: ?limit&offset, max 100)
 export const LISTINGS_PAGE = 20;
@@ -22,7 +22,74 @@ export const queryKeys = {
   ownership: ['ownership'] as const,
   subscription: ['subscription'] as const,
   insights: ['ai', 'insights'] as const,
+  notifications: ['notifications'] as const,
+  alerts: ['alerts'] as const,
+  myResales: ['ownership', 'resales'] as const,
+  admin: ['admin'] as const,
+  adminOverview: ['admin', 'overview'] as const,
+  adminUsers: (q: string, role: UserRole | undefined) => ['admin', 'users', q, role ?? 'all'] as const,
+  adminListings: (status: ListingStatus | undefined, type: ListingType | undefined) =>
+    ['admin', 'listings', status ?? 'all', type ?? 'all'] as const,
+  adminRequests: (status: ResetRequestStatus) => ['admin', 'password-requests', status] as const,
+  adminAudit: (eventType: string) => ['admin', 'audit', eventType] as const,
+  adminInterest: ['admin', 'interest'] as const,
 };
+
+// Next offset of a paged admin list, or undefined at the end
+const nextOffset = (last: { offset: number; total: number; items: unknown[] }) => {
+  const next = last.offset + last.items.length;
+  return next < last.total ? next : undefined;
+};
+
+// Administration (admin only)
+export const useAdminOverview = () => useQuery({ queryKey: queryKeys.adminOverview, queryFn: api.admin.overview });
+
+export const useAdminUsers = (q: string, role: UserRole | undefined) =>
+  useInfiniteQuery({
+    queryKey: queryKeys.adminUsers(q, role),
+    queryFn: ({ pageParam }) => api.admin.users(q, role, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+  });
+
+export const useAdminListings = (status: ListingStatus | undefined, type: ListingType | undefined) =>
+  useInfiniteQuery({
+    queryKey: queryKeys.adminListings(status, type),
+    queryFn: ({ pageParam }) => api.admin.listings(status, type, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+  });
+
+export const usePasswordRequests = (status: ResetRequestStatus) =>
+  useQuery({ queryKey: queryKeys.adminRequests(status), queryFn: () => api.admin.passwordRequests(status) });
+
+export const useAdminAudit = (eventType: string) =>
+  useInfiniteQuery({
+    queryKey: queryKeys.adminAudit(eventType),
+    queryFn: ({ pageParam }) => api.admin.audit(eventType, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: nextOffset,
+  });
+
+export const useAdminInterest = () => useQuery({ queryKey: queryKeys.adminInterest, queryFn: api.admin.interest });
+
+// The topbar bell (in-app only): polled every minute and on window focus
+export const useNotifications = () => {
+  const hasSession = useSessionStore((s) => s.hasSession);
+  return useQuery({
+    queryKey: queryKeys.notifications,
+    queryFn: api.getNotifications,
+    enabled: hasSession,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  });
+};
+
+export const useAlerts = (enabled: boolean) =>
+  useQuery({ queryKey: queryKeys.alerts, queryFn: api.getAlerts, enabled });
+
+export const useMyResales = (enabled: boolean) =>
+  useQuery({ queryKey: queryKeys.myResales, queryFn: api.getMyResales, enabled });
 
 export const useMe = () => {
   const hasSession = useSessionStore((s) => s.hasSession);

@@ -19,6 +19,7 @@ const load = {
   settings: () => import('@/features/settings/SettingsPage'),
   match: () => import('@/features/match/SmartMatchPage'),
   advisor: () => import('@/features/advisor/AdvisorPage'),
+  admin: () => import('@/features/admin/AdminPages'),
   checkout: () => import('@/features/checkout/CheckoutPage'),
   portfolio: () => import('@/features/portfolio/PortfolioPage'),
   premium: () => import('@/features/premium/PremiumPage'),
@@ -41,6 +42,7 @@ const SHARED = [
 const BY_ROLE: Record<UserRole, (() => Promise<unknown>)[]> = {
   investor: [load.match, load.advisor, load.checkout, load.portfolio, load.premium, load.insights],
   seller: [load.sellerListings, load.newListing, load.sellerListing, load.sales],
+  admin: [load.admin],
 };
 
 // After the first screen settles, fetch the role's other pages while the browser is idle, so
@@ -66,6 +68,10 @@ export const router = createBrowserRouter([
       { path: '/', lazy: () => import('@/features/landing/LandingPage').then((m) => ({ Component: m.LandingPage })) },
       { path: '/login', lazy: () => import('@/features/auth/LoginPage').then((m) => ({ Component: m.LoginPage })) },
       {
+        path: '/forgot-password',
+        lazy: () => import('@/features/auth/ForgotPasswordPage').then((m) => ({ Component: m.ForgotPasswordPage })),
+      },
+      {
         path: '/signup',
         lazy: () => import('@/features/auth/RoleSelectPage').then((m) => ({ Component: m.RoleSelectPage })),
       },
@@ -90,6 +96,19 @@ export const router = createBrowserRouter([
           { path: 'market/:id', lazy: () => load.listing().then((m) => ({ Component: m.ListingDetailPage })) },
           { path: 'transactions', lazy: () => load.transactions().then((m) => ({ Component: m.TransactionsPage })) },
           { path: 'settings', lazy: () => load.settings().then((m) => ({ Component: m.SettingsPage })) },
+          {
+            element: <RoleRoute role="admin" />,
+            children: [
+              { path: 'admin/users', lazy: () => load.admin().then((m) => ({ Component: m.AdminUsersPage })) },
+              { path: 'admin/listings', lazy: () => load.admin().then((m) => ({ Component: m.AdminListingsPage })) },
+              {
+                path: 'admin/password-requests',
+                lazy: () => load.admin().then((m) => ({ Component: m.AdminPasswordRequestsPage })),
+              },
+              { path: 'admin/audit', lazy: () => load.admin().then((m) => ({ Component: m.AdminAuditPage })) },
+              { path: 'admin/interest', lazy: () => load.admin().then((m) => ({ Component: m.AdminInterestPage })) },
+            ],
+          },
           {
             element: <RoleRoute role="investor" />,
             children: [

@@ -16,18 +16,20 @@ import { usePendingActionStore } from '@/lib/pendingAction';
 import { useNow } from '@/lib/hooks';
 import { fmtRelativeFuture } from '@/lib/formatters';
 import { DEMO_ACCOUNTS, DEMO_PASSWORD, SHOW_DEMO_ACCOUNTS } from '@/lib/demoAccounts';
-import { t as messages, useT } from '@/i18n';
+import { useT, Messages } from '@/i18n';
 import { AuthShell } from './AuthShell';
 import { useLogin, loginErrorMessage } from './session';
 
 // Used only when the server sends no Retry-After header
 const RATE_LIMIT_FALLBACK_SECONDS = 60;
 
-const schema = z.object({
-  email: z.string().trim().min(1, messages.auth.validation.emailRequired).email(messages.auth.validation.emailInvalid),
-  password: z.string().min(1, messages.auth.validation.passwordRequired),
-});
-type LoginForm = z.infer<typeof schema>;
+// Built on every render from the current language's messages
+const schemaFor = (v: Messages['auth']['validation']) =>
+  z.object({
+    email: z.string().trim().min(1, v.emailRequired).email(v.emailInvalid),
+    password: z.string().min(1, v.passwordRequired),
+  });
+type LoginForm = z.infer<ReturnType<typeof schemaFor>>;
 
 // Where to land after login: the page that sent us here, then a preserved intent, then home
 const useReturnTo = () => {
@@ -55,7 +57,7 @@ export const LoginPage: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginForm>({ resolver: zodResolver(schema), mode: 'onBlur' });
+  } = useForm<LoginForm>({ resolver: zodResolver(schemaFor(t.auth.validation)), mode: 'onBlur' });
 
   if (hasSession && !login.isPending) return <Navigate to={returnTo} replace />;
 
@@ -122,6 +124,12 @@ export const LoginPage: React.FC = () => {
             }
             {...register('password')}
           />
+          <Link
+            to="/forgot-password"
+            className="-mt-2 self-start text-sm font-medium text-fg-link hover:text-fg-link-hover"
+          >
+            {t.password.forgotLink}
+          </Link>
 
           <Button type="submit" variant="accent" size="lg" loading={login.isPending} disabled={lockedFor > 0} fullWidth>
             {t.auth.login}

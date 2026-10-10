@@ -7,7 +7,16 @@
 import Decimal from 'decimal.js';
 import type * as W from './wire';
 import type {
+  AdminOverview,
+  AdminUser,
   AdvisorAnswer,
+  AppNotification,
+  AuditEntry,
+  InterestAssetClass,
+  InterestSignup,
+  Notifications,
+  PasswordResetRequest,
+  PriceAlert,
   AssetListing,
   ChartRange,
   ConfirmResult,
@@ -55,6 +64,7 @@ export const toUser = (u: W.UserOut): User => ({
   subscription_tier: u.subscription_tier,
   subscription_expiry_date: u.subscription_expiry_date ?? null,
   is_premium_active: u.is_premium_active,
+  must_change_password: u.must_change_password,
   created_at: u.created_at,
 });
 
@@ -95,6 +105,7 @@ export const toListing = (l: W.ListingOut): AssetListing => ({
   id: l.id,
   seller_id: l.seller_id,
   seller_name: l.seller_name,
+  listing_type: l.listing_type,
   seller_verified: l.seller_kyc_verified,
   karat: karat(l.karat),
   total_weight_grams: num(l.total_weight_grams),
@@ -215,6 +226,7 @@ export const toTransaction = (t: W.TransactionOut): Transaction => ({
   id: t.id,
   asset_id: t.asset_id,
   karat: karat(t.karat),
+  side: t.side,
   seller_name: t.seller_name,
   buyer_ref: t.buyer_ref ?? null,
   purchased_weight_grams: num(t.purchased_weight_grams),
@@ -270,6 +282,12 @@ export const toOwnership = (o: W.OwnershipOut): Ownership => ({
   updated_at: o.updated_at ?? null,
   message: o.message ?? null,
   disclaimer: o.disclaimer ?? null,
+  by_karat: (o.by_karat ?? []).map((b) => ({
+    karat: karat(b.karat),
+    owned_grams: num(b.owned_grams),
+    reserved_grams: num(b.reserved_grams),
+    available_to_resell_grams: num(b.available_to_resell_grams),
+  })),
 });
 
 export const toServerConfig = (c: W.PublicConfigOut): ServerConfig => ({
@@ -287,4 +305,86 @@ export const toServerConfig = (c: W.PublicConfigOut): ServerConfig => ({
   subscription_price_iqd: num(c.subscription_price_iqd),
   subscription_duration_days: c.subscription_duration_days,
   quote_ttl_seconds: c.quote_ttl_seconds,
+});
+
+// ---- Integrated platform ----------------------------------------------------
+
+const toNotification = (n: W.NotificationOut): AppNotification => ({
+  id: n.id,
+  kind: n.kind,
+  title: n.title,
+  body: n.body,
+  link: n.link ?? null,
+  read: n.read,
+  created_at: n.created_at,
+});
+
+export const toNotifications = (n: W.NotificationsOut): Notifications => ({
+  items: n.items.map(toNotification),
+  unread_count: n.unread_count,
+});
+
+export const toAlert = (a: W.AlertOut): PriceAlert => ({
+  id: a.id,
+  karat: karat(a.karat),
+  direction: a.direction,
+  target_price_per_gram: num(a.target_price_per_gram),
+  status: a.status,
+  triggered_at: a.triggered_at ?? null,
+  created_at: a.created_at,
+});
+
+export const toAdminOverview = (o: W.OverviewOut): AdminOverview => ({
+  investors: o.investors,
+  sellers: o.sellers,
+  inactive_accounts: o.inactive_accounts,
+  premium_active: o.premium_active,
+  active_listings: o.active_listings,
+  active_resale_listings: o.active_resale_listings,
+  transactions: o.transactions,
+  volume_iqd: num(o.volume_iqd),
+  commission_iqd: num(o.commission_iqd),
+  pending_password_requests: o.pending_password_requests,
+  interest: {
+    real_estate: o.interest.real_estate ?? 0,
+    oil: o.interest.oil ?? 0,
+  },
+});
+
+export const toAdminUser = (u: W.AdminUserOut): AdminUser => ({
+  id: u.id,
+  role: u.role,
+  full_name: u.full_name,
+  email: u.email,
+  kyc_verified: u.kyc_verified,
+  is_active: u.is_active,
+  is_premium_active: u.is_premium_active,
+  must_change_password: u.must_change_password,
+  created_at: u.created_at,
+});
+
+export const toResetRequest = (r: W.ResetRequestOut): PasswordResetRequest => ({
+  id: r.id,
+  email: r.email,
+  user_id: r.user_id ?? null,
+  user_name: r.user_name ?? null,
+  status: r.status,
+  created_at: r.created_at,
+  resolved_at: r.resolved_at ?? null,
+});
+
+export const toAuditEntry = (e: W.AuditOut): AuditEntry => ({
+  id: e.id,
+  event_type: e.event_type,
+  actor_id: e.actor_id ?? null,
+  entity_type: e.entity_type ?? null,
+  entity_id: e.entity_id ?? null,
+  data: e.data,
+  created_at: e.created_at,
+});
+
+export const toInterestSignup = (s: W.InterestSignupOut): InterestSignup => ({
+  email: s.email,
+  asset_class: s.asset_class as InterestAssetClass,
+  created_at: s.created_at,
 });

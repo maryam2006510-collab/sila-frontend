@@ -29,6 +29,7 @@ import { MoneyInput } from '@/components/ui/MoneyInput';
 import { Num } from '@/components/ui/Num';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useAppContext } from '@/features/shell/appContext';
+import { AdminOverview } from '@/features/admin/AdminOverview';
 import { useListings, useMyListings, useOwnership, useTransactions } from '@/lib/queries';
 import { holdingsValue, sumOf } from '@/lib/pricing';
 import { fmtAmountWords, fmtDate, fmtDateNumeric } from '@/lib/formatters';
@@ -153,7 +154,9 @@ const InvestorDashboard: React.FC<{ user: User; prices: MarketPrices }> = ({ use
           label={d.kpiTransactions}
           icon={ClockCounterClockwiseIcon}
           status={dataStatus(txQuery)}
-          value={<Num value={transactions.length} format="plain" standalone countUp />}
+          value={
+            <Num value={transactions.filter((tx) => tx.side === 'buy').length} format="plain" standalone countUp />
+          }
           deltaLabel={d.kpiTransactionsHelper}
         />
         <KpiCard
@@ -269,12 +272,14 @@ const RecentRow: React.FC<{ tx: Transaction }> = ({ tx }) => {
     <li className="flex items-center justify-between gap-3 min-h-16 py-2">
       <div className="min-w-0">
         <p className="m-0 text-body font-medium text-fg">
+          {tx.side === 'sell' && <span className="text-fg-muted">{t.history.sideSell} · </span>}
           <Num value={tx.purchased_weight_grams} format="grams" /> · {t.units.karat(tx.karat)}
         </p>
         <p className="m-0 text-sm text-fg-subtle truncate">{fmtDate(tx.created_at)}</p>
       </div>
       <p className="m-0 text-body font-medium text-fg shrink-0">
-        <Num value={tx.total_paid_by_investor} format="iqd" />
+        {/* A sale received the gold value; a purchase paid the total with commission */}
+        <Num value={tx.side === 'sell' ? tx.principal_amount : tx.total_paid_by_investor} format="iqd" />
       </p>
     </li>
   );
@@ -369,6 +374,7 @@ const SellerDashboard: React.FC<{ prices: MarketPrices }> = ({ prices }) => {
 
 export const DashboardHome: React.FC = () => {
   const { user, prices } = useAppContext();
+  if (user.role === 'admin') return <AdminOverview />;
   return user.role === 'investor' ? (
     <InvestorDashboard user={user} prices={prices} />
   ) : (

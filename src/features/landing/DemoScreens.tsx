@@ -16,7 +16,7 @@ import { OrderSummary } from '@/components/fin/OrderSummary';
 import { SignatureCard } from '@/components/fin/SignatureCard';
 import { KARATS, estimateOrder } from '@/lib/pricing';
 import { useServerConfig } from '@/lib/queries';
-import { fmtPct } from '@/lib/formatters';
+import { fmtGrams, fmtPct } from '@/lib/formatters';
 import { TransactionPreview } from '@/lib/types';
 import { useT } from '@/i18n';
 
@@ -94,7 +94,7 @@ export const MatchScreen: React.FC = () => {
         <Chip karat={21} />
         <span className="text-sm font-semibold text-state-indicator">{t.match.bestMatch}</span>
       </div>
-      <p className="m-0 text-h4 font-semibold text-fg">سبيكة ذهب عيار 21 · مجوهرات الكرّادة</p>
+      <p className="m-0 text-h4 font-semibold text-fg">{t.landing.demo.matchTitle(21)}</p>
       <dl className="m-0 grid grid-cols-2 gap-3">
         <div>
           <dt className="text-sm text-fg-subtle">{t.match.youGet}</dt>
@@ -109,10 +109,7 @@ export const MatchScreen: React.FC = () => {
           </dd>
         </div>
       </dl>
-      <AiInsight
-        text="يغطي ميزانيتك بالكامل: قرابة 10.16 غ من عيار 21. يناسب ملفك الاستثماري."
-        source={t.match.reasonSource}
-      />
+      <AiInsight text={t.landing.demo.matchReason(fmtGrams(10.157), 21)} source={t.match.reasonSource} />
     </Card>
   );
 };

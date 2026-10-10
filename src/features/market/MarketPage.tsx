@@ -154,7 +154,12 @@ export const MarketPage: React.FC = () => {
           <p className="m-0 text-sm text-fg-subtle">{m.count(total)}</p>
           <div className="card-grid-listings">
             {listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} isSellerView={!isInvestor} />
+              // No buy button on my own resale offer (Workflow 09): it is managed from the portfolio
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                isSellerView={!isInvestor || listing.seller_id === user.id}
+              />
             ))}
           </div>
           {listingsQuery.hasNextPage && (

@@ -27,6 +27,8 @@ import { useInsights } from '@/lib/queries';
 import { isolateFigures } from '@/lib/bidi';
 import { fmtPct } from '@/lib/formatters';
 import { useT } from '@/i18n';
+import { useAppContext } from '@/features/shell/appContext';
+import { PriceAlertsCard } from './PriceAlertsCard';
 
 const PanelTitle: React.FC<{ icon: Icon; children: React.ReactNode }> = ({ icon: IconComponent, children }) => (
   <h2 className="text-h4 font-semibold text-fg m-0 flex items-center gap-2">
@@ -47,6 +49,7 @@ export const InsightsPage: React.FC = () => {
   const t = useT();
   const i = t.insights;
   const navigate = useNavigate();
+  const { prices } = useAppContext();
   const query = useInsights();
 
   if (query.isPending) {
@@ -211,6 +214,9 @@ export const InsightsPage: React.FC = () => {
           </ul>
         )}
       </Card>
+
+      {/* Premium price alerts: fire once in the bell when the live price crosses the target */}
+      <PriceAlertsCard prices={prices} />
 
       <p className="m-0 text-sm text-fg-subtle">{t.match.disclosure}</p>
     </div>

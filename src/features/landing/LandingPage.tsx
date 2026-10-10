@@ -14,6 +14,7 @@ import { BrandMark } from './BrandMark';
 import { ForSellers } from './ForSellers';
 import { PremiumBento } from './PremiumBento';
 import { Faq } from './Faq';
+import { Waitlist } from './Waitlist';
 import { FinalCta } from './FinalCta';
 import { useLandingReveals } from './motion/reveals';
 import { ScrollTrigger } from './motion/gsap';
@@ -70,6 +71,7 @@ export const LandingPage: React.FC = () => {
             <BrandMark />
             <ForSellers />
             <PremiumBento />
+            <Waitlist />
             <Faq />
           </>
         )}

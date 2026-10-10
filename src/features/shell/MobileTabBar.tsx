@@ -39,7 +39,7 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({ role, onLogout }) =>
   const location = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const extra = moreItems(role);
+  const extra = moreItems(role, t.shell.nav);
   const moreActive = extra.some((item) => location.pathname.startsWith(item.to));
 
   return (
@@ -49,7 +49,7 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({ role, onLogout }) =>
         className="lg:hidden fixed bottom-0 inset-x-0 z-header bg-surface-1 border-t border-line pb-safe-bottom"
       >
         <div className="h-tabbar flex items-stretch">
-          {tabBarItems(role).map((item) => (
+          {tabBarItems(role, t.shell.nav).map((item) => (
             <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => tabClass(isActive)}>
               {({ isActive }) => (
                 <>

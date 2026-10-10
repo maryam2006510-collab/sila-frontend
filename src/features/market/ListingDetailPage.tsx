@@ -20,7 +20,7 @@ import { livePriceFor } from '@/lib/pricing';
 import { fmtNumber } from '@/lib/formatters';
 import { useMirrored } from '@/lib/direction';
 import { useNow } from '@/lib/hooks';
-import { isPromotedAt } from '@/lib/status';
+import { isPromotedAt, sellerLabel } from '@/lib/status';
 import { useT } from '@/i18n';
 import { ListingLoadError } from './ListingLoadError';
 
@@ -91,7 +91,8 @@ export const ListingDetailPage: React.FC = () => {
                   aria-label={t.shell.verified}
                 />
               )}
-              {t.listing.seller} <span className="font-medium text-fg">{listing.seller_name}</span>
+              {t.listing.seller}{' '}
+              <span className="font-medium text-fg">{sellerLabel(listing, t.resale.sellerLabel)}</span>
             </p>
 
             <dl className="m-0 grid grid-cols-2 md:grid-cols-3 gap-5 pt-5 border-t border-line-subtle">
@@ -143,6 +144,14 @@ export const ListingDetailPage: React.FC = () => {
                 className="m-0 p-3 rounded-sm bg-muted border border-line-subtle text-body text-fg-muted"
               >
                 {d.notActive}
+              </p>
+            ) : listing.seller_id === user.id ? (
+              // My own resale offer: it can be managed from the portfolio, never bought (Workflow 09)
+              <p
+                role="status"
+                className="m-0 p-3 rounded-sm bg-muted border border-line-subtle text-body text-fg-muted"
+              >
+                {t.resale.ownListing}
               </p>
             ) : isInvestor ? (
               <>

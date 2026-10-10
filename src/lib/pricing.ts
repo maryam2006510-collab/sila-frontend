@@ -45,12 +45,16 @@ export const TIER_NUDGE_WINDOW_G = 10;
 
 // Holdings per karat from the purchase history (the ownership record only stores total
 // grams). Value = Σ grams(karat) × live price(karat), never grams × 24K.
+// A purchase adds to the holdings; a sale (an investor resale, Workflow 09) takes them away
+export const signedGrams = (tx: Transaction): number =>
+  tx.side === 'sell' ? -tx.purchased_weight_grams : tx.purchased_weight_grams;
+
 export const holdingsByKarat = (transactions: Transaction[]): { karat: Karat; grams: number }[] =>
   KARATS.map((karat) => ({
     karat,
     grams: transactions
       .filter((tx) => tx.karat === karat)
-      .reduce((sum, tx) => sum.plus(tx.purchased_weight_grams), new Decimal(0))
+      .reduce((sum, tx) => sum.plus(signedGrams(tx)), new Decimal(0))
       .toNumber(),
   })).filter((h) => h.grams > 0);
 

@@ -5,6 +5,7 @@
 import React from 'react';
 import { BroadcastIcon, ShieldCheckIcon, SignatureIcon } from '@phosphor-icons/react';
 import { Logo } from '@/components/ui/Logo';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useT } from '@/i18n';
 
 export const AuthShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -18,8 +19,9 @@ export const AuthShell: React.FC<{ children: React.ReactNode }> = ({ children })
   return (
     <div className="min-h-screen bg-canvas text-fg flex flex-col md:grid md:grid-cols-golden">
       {/* Mobile header band (136) */}
-      <header className="md:hidden h-g2 bg-surface-brand text-fg-on-brand flex items-center px-5">
+      <header className="md:hidden h-g2 bg-surface-brand text-fg-on-brand flex items-center justify-between px-5">
         <Logo variant="icon" tone="white" height={32} linkHome />
+        <LanguageToggle className="h-11 px-3 text-fg-on-brand hover:bg-state-hover" />
       </header>
 
       <main className="flex items-start md:items-center justify-center px-5 py-8 md:p-13">
@@ -27,7 +29,10 @@ export const AuthShell: React.FC<{ children: React.ReactNode }> = ({ children })
       </main>
 
       <aside className="hidden md:flex flex-col justify-between bg-surface-brand text-fg-on-brand p-13 page-stagger">
-        <Logo variant="full" tone="white" height={40} linkHome />
+        <div className="flex items-center justify-between gap-5">
+          <Logo variant="full" tone="white" height={40} linkHome />
+          <LanguageToggle className="h-11 px-3 text-fg-on-brand hover:bg-state-hover" />
+        </div>
         <div className="flex flex-col gap-8">
           <p className="text-h3 font-semibold m-0">{t.auth.brandLine}</p>
           <ul className="m-0 p-0 list-none flex flex-col gap-5">

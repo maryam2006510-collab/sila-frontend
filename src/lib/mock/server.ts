@@ -101,6 +101,10 @@ interface UserRec {
   risk_profile: RiskProfile | null;
   subscription_tier: SubscriptionTier;
   subscription_expiry_date: string | null;
+  is_active: boolean;
+  must_change_password: boolean;
+  // Password version (ms of the last change): tokens carry it and must match
+  pwv: number;
   created_at: string;
 }
 
@@ -108,6 +112,7 @@ interface ListingRec {
   id: string;
   seller_id: string;
   karat: Karat;
+  listing_type: 'seller_listing' | 'investor_resale';
   total: Decimal;
   available: Decimal;
   base_price: Decimal;
@@ -142,6 +147,83 @@ const users: UserRec[] = [];
 const listings: ListingRec[] = [];
 const transactions: TxRec[] = [];
 const ownership = new Map<string, OwnershipRec>();
+
+interface NotificationRec {
+  id: string;
+  user_id: string;
+  kind: string;
+  title: string;
+  body: string;
+  link: string | null;
+  read: boolean;
+  created_at: string;
+}
+interface AlertRec {
+  id: string;
+  user_id: string;
+  karat: Karat;
+  direction: 'above' | 'below';
+  target: Decimal;
+  status: 'active' | 'triggered' | 'cancelled';
+  triggered_at: string | null;
+  created_at: string;
+}
+interface ResetRec {
+  id: string;
+  email: string;
+  user_id: string | null;
+  status: 'pending' | 'resolved' | 'dismissed';
+  created_at: string;
+  resolved_at: string | null;
+}
+interface AuditRec {
+  id: number;
+  event_type: string;
+  actor_id: string | null;
+  entity_type: string | null;
+  entity_id: string | null;
+  data: Record<string, unknown>;
+  created_at: string;
+}
+const notificationsStore: NotificationRec[] = [];
+const alertsStore: AlertRec[] = [];
+const resetRequests: ResetRec[] = [];
+const interestStore: { email: string; asset_class: 'real_estate' | 'oil'; created_at: string }[] = [];
+const auditLog: AuditRec[] = [];
+
+const RESALE_SELLER_LABEL = 'مستثمر على صِلة';
+const sellerLabel = (l: ListingRec) =>
+  l.listing_type === 'investor_resale' ? RESALE_SELLER_LABEL : users.find((u) => u.id === l.seller_id)!.full_name;
+
+const notify = (userId: string, kind: string, title: string, body: string, link: string | null) => {
+  notificationsStore.unshift({
+    id: uuid(),
+    user_id: userId,
+    kind,
+    title,
+    body,
+    link,
+    read: false,
+    created_at: iso(Date.now()),
+  });
+};
+const audit = (
+  event_type: string,
+  actor_id: string | null,
+  entity_type: string | null,
+  entity_id: string | null,
+  data: Record<string, unknown> = {}
+) => {
+  auditLog.unshift({
+    id: auditLog.length + 1,
+    event_type,
+    actor_id,
+    entity_type,
+    entity_id,
+    data,
+    created_at: iso(Date.now()),
+  });
+};
 // Idempotency-Key → the first response (confirm and listing creation)
 const idempotency = new Map<string, unknown>();
 
@@ -181,8 +263,14 @@ const signature = (input: string) => {
   return out.slice(0, 64);
 };
 
-const purchase = (investor: UserRec, listing: ListingRec, grams: Decimal, price: Decimal, at: number): TxRec => {
-  const seller = users.find((u) => u.id === listing.seller_id)!;
+const purchase = (
+  investor: UserRec,
+  listing: ListingRec,
+  grams: Decimal,
+  price: Decimal,
+  at: number,
+  announce = false
+): TxRec => {
   const b = breakdown(grams, price);
   // Atomic on the real server (SELECT ... FOR UPDATE); single-threaded here
   listing.available = listing.available.minus(grams);
@@ -196,7 +284,7 @@ const purchase = (investor: UserRec, listing: ListingRec, grams: Decimal, price:
     investor_id: investor.id,
     asset_id: listing.id,
     karat: listing.karat,
-    seller_name: seller.full_name,
+    seller_name: sellerLabel(listing),
     grams,
     price,
     principal: b.principal,
@@ -210,7 +298,66 @@ const purchase = (investor: UserRec, listing: ListingRec, grams: Decimal, price:
   record.grams = record.grams.plus(grams);
   record.updated_at = iso(at);
   ownership.set(investor.id, record);
+  // Investor resale: the grams leave the reseller's record in the same step (Workflow 09)
+  if (listing.listing_type === 'investor_resale') {
+    const from = ownership.get(listing.seller_id)!;
+    from.grams = from.grams.minus(grams);
+    from.updated_at = iso(at);
+  }
+  if (announce) {
+    const g = grams.toString();
+    notify(
+      investor.id,
+      'purchase_completed',
+      'تمت عملية الشراء',
+      `اشتريت ${g} غرام عيار ${listing.karat}، وانضافت لرصيدك الموثّق.`,
+      '/app/portfolio'
+    );
+    if (listing.listing_type === 'investor_resale') {
+      notify(
+        listing.seller_id,
+        'resale_sold',
+        'انباع جزء من عرضك',
+        `انباع ${g} غرام عيار ${listing.karat} من عرض إعادة البيع مالتك.`,
+        '/app/portfolio'
+      );
+    } else {
+      notify(
+        listing.seller_id,
+        'listing_sold',
+        'عملية بيع جديدة',
+        `انباع ${g} غرام عيار ${listing.karat} من عرضك.`,
+        '/app/sales'
+      );
+    }
+  }
   return tx;
+};
+
+// Grams per karat: bought minus resold (derived, like the server)
+const holdingsByKarat = (investorId: string) => {
+  const out = new Map<Karat, Decimal>(VALID_KARATS.map((k) => [k, D(0)]));
+  for (const t of transactions) {
+    if (t.investor_id === investorId) out.set(t.karat, out.get(t.karat)!.plus(t.grams));
+    const l = listings.find((x) => x.id === t.asset_id);
+    if (l && l.listing_type === 'investor_resale' && l.seller_id === investorId) {
+      out.set(t.karat, out.get(t.karat)!.minus(t.grams));
+    }
+  }
+  return out;
+};
+const reservedByKarat = (investorId: string) => {
+  const out = new Map<Karat, Decimal>(VALID_KARATS.map((k) => [k, D(0)]));
+  for (const l of listings) {
+    if (
+      l.listing_type === 'investor_resale' &&
+      l.seller_id === investorId &&
+      (l.status === 'active' || l.status === 'suspended')
+    ) {
+      out.set(l.karat, out.get(l.karat)!.plus(l.available));
+    }
+  }
+  return out;
 };
 
 // Seed (mirrors the backend's app/scripts/seed.py)
@@ -227,9 +374,28 @@ const purchase = (investor: UserRec, listing: ListingRec, grams: Decimal, price:
       risk_profile: u.risk_profile,
       subscription_tier: u.subscription_tier,
       subscription_expiry_date: u.subscription_days === null ? null : iso(now + u.subscription_days * DAY_MS),
+      is_active: true,
+      must_change_password: false,
+      pwv: 0,
       created_at: iso(now - 30 * DAY_MS),
     });
   }
+  // Mock only: on the real backend the admin comes from `python -m app.scripts.create_admin`
+  users.push({
+    id: '00000000-0000-4000-8900-000000000001',
+    role: 'admin',
+    full_name: 'إدارة صِلة',
+    email: 'admin@sila.iq',
+    password: DEMO_PASSWORD,
+    kyc_verified: true,
+    risk_profile: null,
+    subscription_tier: 'free',
+    subscription_expiry_date: null,
+    is_active: true,
+    must_change_password: false,
+    pwv: 0,
+    created_at: iso(now - 60 * DAY_MS),
+  });
   for (const l of SEED_LISTINGS) {
     const seller = users.find((u) => u.email === l.seller_email)!;
     const created = now - l.days_ago * DAY_MS;
@@ -237,6 +403,7 @@ const purchase = (investor: UserRec, listing: ListingRec, grams: Decimal, price:
       id: l.id,
       seller_id: seller.id,
       karat: l.karat,
+      listing_type: 'seller_listing',
       total: D(l.grams),
       available: D(l.grams),
       base_price: karatPriceNow(l.karat),
@@ -268,6 +435,7 @@ const userOut = (u: UserRec): W.UserOut => ({
   subscription_tier: isPremiumActive(u) ? 'premium' : u.subscription_tier === 'premium' ? 'free' : u.subscription_tier,
   subscription_expiry_date: u.subscription_expiry_date,
   is_premium_active: isPremiumActive(u),
+  must_change_password: u.must_change_password,
   created_at: u.created_at,
 });
 
@@ -276,7 +444,8 @@ const listingOut = (l: ListingRec): W.ListingOut => {
   return {
     id: l.id,
     seller_id: l.seller_id,
-    seller_name: seller.full_name,
+    seller_name: sellerLabel(l),
+    listing_type: l.listing_type,
     seller_kyc_verified: seller.kyc_verified,
     karat: l.karat,
     total_weight_grams: g3(l.total),
@@ -298,8 +467,9 @@ const txOut = (t: TxRec, viewer: UserRec): W.TransactionOut => ({
   id: t.id,
   asset_id: t.asset_id,
   karat: t.karat,
+  side: t.investor_id === viewer.id ? 'buy' : 'sell',
   seller_name: t.seller_name,
-  buyer_ref: viewer.role === 'seller' ? buyerRef(t.investor_id) : null,
+  buyer_ref: t.investor_id === viewer.id ? null : buyerRef(t.investor_id),
   purchased_weight_grams: g3(t.grams),
   execution_price_per_gram: m2(t.price),
   principal_amount: m2(t.principal),
@@ -381,15 +551,18 @@ const notActive = () => fail(409, 'LISTING_NOT_ACTIVE', 'هذا العرض غي�
 // Tokens and testing switches
 // --------------------------------------------------------------------------
 // Tokens embed the user id so a page reload (which resets mock state) keeps demo sessions alive
-const accessTokenFor = (userId: string) => `mock-access.${userId}.${uuid().slice(0, 8)}`;
-const refreshTokenFor = (userId: string) => `mock-refresh.${userId}.${uuid().slice(0, 8)}`;
-const userIdFromToken = (token: string, kind: 'access' | 'refresh') => {
-  const [prefix, userId] = token.split('.');
-  return prefix === `mock-${kind}` ? userId : null;
+const accessTokenFor = (u: UserRec) => `mock-access.${u.id}.${u.pwv}.${uuid().slice(0, 8)}`;
+const refreshTokenFor = (u: UserRec) => `mock-refresh.${u.id}.${u.pwv}.${uuid().slice(0, 8)}`;
+// Like the server: an inactive account, or a token from an earlier password, is refused
+const userFromToken = (token: string, kind: 'access' | 'refresh'): UserRec | null => {
+  const [prefix, userId, pwv] = token.split('.');
+  if (prefix !== `mock-${kind}`) return null;
+  const u = users.find((x) => x.id === userId);
+  return u && u.is_active && String(u.pwv) === pwv ? u : null;
 };
 const tokensFor = (u: UserRec): W.TokenOut => ({
-  access_token: accessTokenFor(u.id),
-  refresh_token: refreshTokenFor(u.id),
+  access_token: accessTokenFor(u),
+  refresh_token: refreshTokenFor(u),
   token_type: 'bearer',
   expires_in: 900,
 });
@@ -397,8 +570,7 @@ const tokensFor = (u: UserRec): W.TokenOut => ({
 const userFromHeaders = (headers: Record<string, string>): UserRec | null => {
   const auth = headers.Authorization ?? headers.authorization;
   if (!auth?.startsWith('Bearer ')) return null;
-  const id = userIdFromToken(auth.slice(7), 'access');
-  return users.find((u) => u.id === id) ?? null;
+  return userFromToken(auth.slice(7), 'access');
 };
 
 const readSetting = (key: string): string | null => {
@@ -444,9 +616,9 @@ const advisorRiskTip: Record<RiskProfile, string> = {
 const fmtWhole = (v: Decimal) => v.toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toNumber().toLocaleString('en-US');
 
 // Ranked listings for a budget: the matcher behind /ai/match and /ai/advisor (top 5)
-const matchResults = (profile: RiskProfile, budget: Decimal): W.MatchOut['results'] =>
+const matchResults = (profile: RiskProfile, budget: Decimal, viewerId = ''): W.MatchOut['results'] =>
   listings
-    .filter((l) => l.status === 'active')
+    .filter((l) => l.status === 'active' && l.seller_id !== viewerId)
     .map((l) => {
       const price = karatPriceNow(l.karat);
       // Grams whose principal + commission fits the budget, capped by availability
@@ -581,8 +753,28 @@ const riskInsight = (): NonNullable<W.PreviewOut['risk_insight']> => {
 // --------------------------------------------------------------------------
 // Router
 // --------------------------------------------------------------------------
+const checkAlerts = () => {
+  for (const a of alertsStore) {
+    if (a.status !== 'active') continue;
+    const price = karatPriceNow(a.karat);
+    const crossed = a.direction === 'above' ? price.gte(a.target) : price.lte(a.target);
+    if (!crossed) continue;
+    a.status = 'triggered';
+    a.triggered_at = iso(Date.now());
+    const verb = a.direction === 'above' ? 'ارتفع إلى' : 'نزل إلى';
+    notify(
+      a.user_id,
+      'price_alert',
+      `تنبيه سعر عيار ${a.karat}`,
+      `سعر غرام عيار ${a.karat} ${verb} ${fmtWhole(price)} دينار (هدفك ${fmtWhole(a.target)} دينار).`,
+      '/app/market'
+    );
+  }
+};
+
 export const mockTransport = async (req: TransportRequest): Promise<TransportResponse> => {
   ensureTicker();
+  checkAlerts();
   await new Promise((r) => setTimeout(r, latencyMs()));
 
   const url = new URL(req.path, 'http://mock.local');
@@ -622,6 +814,9 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
       risk_profile: role === 'investor' ? (body.risk_profile as RiskProfile) : null,
       subscription_tier: 'free',
       subscription_expiry_date: null,
+      is_active: true,
+      must_change_password: false,
+      pwv: 0,
       created_at: iso(Date.now()),
     };
     users.push(created);
@@ -636,12 +831,64 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
     if (!account || account.password !== body.password) {
       return fail(401, 'INVALID_CREDENTIALS', 'البريد الإلكتروني أو كلمة المرور غير صحيحة');
     }
+    if (!account.is_active) return fail(403, 'ACCOUNT_DISABLED', 'هذا الحساب موقوف، تواصل مع إدارة صِلة');
     return ok({ ...tokensFor(account), user: userOut(account) } satisfies W.LoginOut);
   }
 
+  // "Forgot password": a request for the admins, the same reply whether the e-mail exists or not
+  if (method === 'POST' && path === '/api/auth/forgot-password') {
+    const email = String(body.email ?? '')
+      .trim()
+      .toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(email)) return invalid('email', 'value is not a valid email address');
+    const account = users.find((u) => u.email === email);
+    const pending = resetRequests.some((r) => r.email === email && r.status === 'pending');
+    if (!pending && account?.role !== 'admin') {
+      resetRequests.unshift({
+        id: uuid(),
+        email,
+        user_id: account?.id ?? null,
+        status: 'pending',
+        created_at: iso(Date.now()),
+        resolved_at: null,
+      });
+      if (account) {
+        for (const admin of users.filter((u) => u.role === 'admin' && u.is_active)) {
+          notify(
+            admin.id,
+            'password_reset_request',
+            'طلب استرجاع كلمة مرور',
+            `${account.full_name} (${email}) طلب كلمة مرور جديدة.`,
+            '/app/admin/password-requests'
+          );
+        }
+      }
+    }
+    return ok(
+      {
+        message: 'إذا البريد الإلكتروني مسجل عدنا، طلبك وصل لإدارة صِلة، وراح يتواصلون وياك بكلمة مرور مؤقتة.',
+      } satisfies W.MessageOut,
+      202
+    );
+  }
+
+  if (method === 'POST' && path === '/api/users/me/password') {
+    if (!user) return unauthorized();
+    if (body.current_password !== user.password) {
+      return fail(401, 'INVALID_CREDENTIALS', 'كلمة المرور الحالية غير صحيحة');
+    }
+    const next = String(body.new_password ?? '');
+    if (next.length < 8) return invalid('new_password', 'String should have at least 8 characters');
+    if (next === user.password) return fail(422, 'VALIDATION_ERROR', 'اختار كلمة مرور جديدة تختلف عن الحالية');
+    user.password = next;
+    user.must_change_password = false;
+    user.pwv = Date.now();
+    audit('password_changed', user.id, 'user', user.id);
+    return ok({ ...tokensFor(user), user: userOut(user) } satisfies W.LoginOut);
+  }
+
   if (method === 'POST' && path === '/api/auth/refresh') {
-    const id = userIdFromToken(String(body.refresh_token ?? ''), 'refresh');
-    const account = users.find((u) => u.id === id);
+    const account = userFromToken(String(body.refresh_token ?? ''), 'refresh');
     return account ? ok(tokensFor(account)) : unauthorized();
   }
 
@@ -719,6 +966,7 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
       id: uuid(),
       seller_id: user.id,
       karat,
+      listing_type: 'seller_listing',
       total: weight.toDecimalPlaces(3, Decimal.ROUND_DOWN),
       available: weight.toDecimalPlaces(3, Decimal.ROUND_DOWN),
       // Price is computed by the server; any price sent is ignored
@@ -782,7 +1030,7 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
     if (user.role !== 'investor') return forbidden();
     const budget = D(String(body.budget_iqd ?? '0'));
     if (!budget.gt(0)) return invalid('budget_iqd', 'Input should be greater than 0');
-    const results = matchResults(user.risk_profile ?? 'medium', budget);
+    const results = matchResults(user.risk_profile ?? 'medium', budget, user.id);
     return ok({
       budget_iqd: m2(budget).replace(/\.00$/, ''),
       risk_profile: user.risk_profile ?? 'medium',
@@ -809,7 +1057,7 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
       const guess = parseAdvisorBudget(question);
       if (guess) budget = { ...guess, confirmed: guess.source === 'question_digits' };
     }
-    const suggestions = budget?.confirmed ? matchResults(profile, D(budget.amount_iqd)) : [];
+    const suggestions = budget?.confirmed ? matchResults(profile, D(budget.amount_iqd), user.id) : [];
 
     const moneyTopic = budget !== null || MONEY_TOPIC.test(question.replace(/[أإآ]/g, 'ا'));
     const state = advisorState(moneyTopic, budget, suggestions);
@@ -906,6 +1154,7 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
     if (user.role !== 'investor') return forbidden();
     const listing = listings.find((l) => l.id === body.asset_id);
     if (!listing) return notFound();
+    if (listing.seller_id === user.id) return fail(403, 'FORBIDDEN', 'هذا عرضك، ما تكدر تشتري منه');
     if (listing.status !== 'active') return notActive();
     const grams = D(String(body.purchased_weight_grams ?? '0')).toDecimalPlaces(3, Decimal.ROUND_DOWN);
     if (!grams.gt(0)) return invalid('purchased_weight_grams', 'Input should be greater than 0');
@@ -952,6 +1201,7 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
 
     const listing = listings.find((l) => l.id === body.asset_id);
     if (!listing) return notFound();
+    if (listing.seller_id === user.id) return fail(403, 'FORBIDDEN', 'هذا عرضك، ما تكدر تشتري منه');
     const grams = D(String(body.purchased_weight_grams ?? '0')).toDecimalPlaces(3, Decimal.ROUND_DOWN);
     const quote = decodeQuote(String(body.quote_token ?? ''));
     if (
@@ -969,7 +1219,7 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
     }
 
     // Executed at the QUOTED price: what the user saw is what they pay
-    const tx = purchase(user, listing, grams, D(quote.price), Date.now());
+    const tx = purchase(user, listing, grams, D(quote.price), Date.now(), true);
     const record = ownership.get(user.id)!;
     const out: W.ConfirmOut = {
       transaction: txOut(tx, user),
@@ -984,10 +1234,10 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
 
   if (method === 'GET' && path === '/api/transactions') {
     if (!user) return unauthorized();
-    const own =
-      user.role === 'investor'
-        ? transactions.filter((t) => t.investor_id === user.id)
-        : transactions.filter((t) => listings.find((l) => l.id === t.asset_id)?.seller_id === user.id);
+    // Bought, or sold from my listing (a seller) or my resale (an investor)
+    const own = transactions.filter(
+      (t) => t.investor_id === user.id || listings.find((l) => l.id === t.asset_id)?.seller_id === user.id
+    );
     return ok(
       page(
         own.map((t) => txOut(t, user)),
@@ -1061,7 +1311,351 @@ export const mockTransport = async (req: TransportRequest): Promise<TransportRes
       updated_at: record?.updated_at ?? null,
       message: record ? null : 'ابدأ أول استثمار',
       disclaimer: OWNERSHIP_DISCLAIMER,
+      by_karat: VALID_KARATS.map((k) => {
+        const owned = holdingsByKarat(user.id).get(k)!;
+        const reserved = reservedByKarat(user.id).get(k)!;
+        return {
+          karat: k,
+          owned_grams: g3(owned),
+          reserved_grams: g3(reserved),
+          available_to_resell_grams: g3(Decimal.max(owned.minus(reserved), 0)),
+        };
+      }).filter((b) => D(b.owned_grams).gt(0) || D(b.reserved_grams).gt(0)),
     } satisfies W.OwnershipOut);
+  }
+
+  // ---- Investor resale (Workflow 09) -----------------------------------------
+  if (path === '/api/ownership/resale' && method === 'POST') {
+    if (!user) return unauthorized();
+    if (user.role !== 'investor') return forbidden();
+    const key = idemKey ? `resale:${user.id}:${idemKey}` : null;
+    if (key && idempotency.has(key)) return ok(idempotency.get(key), 200);
+    if (!user.kyc_verified) return fail(403, 'KYC_NOT_VERIFIED', 'يجب توثيق حسابك قبل عرض ذهبك للبيع');
+    const karat = Number(body.karat) as Karat;
+    if (!VALID_KARATS.includes(karat)) return invalid('karat', 'Input should be 18, 21, 22 or 24');
+    const grams = D(String(body.weight_grams ?? '0')).toDecimalPlaces(3, Decimal.ROUND_DOWN);
+    if (!grams.gt(0)) return invalid('weight_grams', 'Input should be greater than 0');
+    const available = holdingsByKarat(user.id).get(karat)!.minus(reservedByKarat(user.id).get(karat)!);
+    if (grams.gt(available)) {
+      return fail(409, 'INSUFFICIENT_HOLDINGS', `المتاح للبيع من عيار ${karat}: ${g3(Decimal.max(available, 0))} غرام`);
+    }
+    const now = iso(Date.now());
+    const listing: ListingRec = {
+      id: uuid(),
+      seller_id: user.id,
+      karat,
+      listing_type: 'investor_resale',
+      total: grams,
+      available: grams,
+      base_price: karatPriceNow(karat),
+      status: 'active',
+      is_promoted: false,
+      promotion_expiry_date: null,
+      created_at: now,
+      updated_at: now,
+    };
+    listings.unshift(listing);
+    audit('resale_listed', user.id, 'asset_listing', listing.id, { karat, grams: g3(grams) });
+    const out = listingOut(listing);
+    if (key) idempotency.set(key, out);
+    return ok(out, 201);
+  }
+
+  if (path === '/api/ownership/resale' && method === 'GET') {
+    if (!user) return unauthorized();
+    if (user.role !== 'investor') return forbidden();
+    const open = (l: ListingRec) => (l.status === 'active' || l.status === 'suspended' ? 0 : 1);
+    return ok(
+      listings
+        .filter((l) => l.listing_type === 'investor_resale' && l.seller_id === user.id)
+        .sort((a, b) => open(a) - open(b) || b.created_at.localeCompare(a.created_at))
+        .map(listingOut)
+    );
+  }
+
+  const resaleMatch = path.match(/^\/api\/ownership\/resale\/([^/]+)$/);
+  if (resaleMatch && method === 'PATCH') {
+    if (!user) return unauthorized();
+    if (user.role !== 'investor') return forbidden();
+    const listing = listings.find((l) => l.id === decodeURIComponent(resaleMatch[1]));
+    if (!listing || listing.seller_id !== user.id || listing.listing_type !== 'investor_resale') {
+      return fail(403, 'FORBIDDEN', 'هذا العرض مو من عروض إعادة البيع مالتك');
+    }
+    const status = String(body.status);
+    if (!['active', 'suspended', 'withdrawn'].includes(status)) {
+      return invalid('status', 'Input should be active, suspended or withdrawn');
+    }
+    if (listing.status === 'sold_out' || listing.status === 'withdrawn') {
+      return fail(409, 'INVALID_STATUS_TRANSITION', 'العرض منتهي ولا يمكن تغيير حالته');
+    }
+    listing.status = status as ListingStatus;
+    listing.updated_at = iso(Date.now());
+    return ok(listingOut(listing));
+  }
+
+  // ---- Notifications (any signed-in user) ------------------------------------
+  const notificationsOut = (u: UserRec): W.NotificationsOut => {
+    const mine = notificationsStore.filter((n) => n.user_id === u.id);
+    return {
+      items: mine.slice(0, 20).map(({ user_id: _owner, ...n }) => n),
+      unread_count: mine.filter((n) => !n.read).length,
+    };
+  };
+
+  if (method === 'GET' && path === '/api/notifications') {
+    if (!user) return unauthorized();
+    return ok(notificationsOut(user));
+  }
+
+  if (method === 'POST' && path === '/api/notifications/read') {
+    if (!user) return unauthorized();
+    const ids = Array.isArray(body.ids) && body.ids.length ? (body.ids as string[]) : null;
+    for (const n of notificationsStore) {
+      if (n.user_id === user.id && (!ids || ids.includes(n.id))) n.read = true;
+    }
+    return ok(notificationsOut(user));
+  }
+
+  // ---- Price alerts (Premium) ---------------------------------------------------
+  const alertOut = (a: AlertRec): W.AlertOut => ({
+    id: a.id,
+    karat: a.karat,
+    direction: a.direction,
+    target_price_per_gram: m2(a.target),
+    status: a.status,
+    triggered_at: a.triggered_at,
+    created_at: a.created_at,
+  });
+
+  if (path === '/api/alerts' && method === 'GET') {
+    if (!user) return unauthorized();
+    if (user.role !== 'investor') return forbidden();
+    return ok(alertsStore.filter((a) => a.user_id === user.id).map(alertOut));
+  }
+
+  if (path === '/api/alerts' && method === 'POST') {
+    if (!user) return unauthorized();
+    if (user.role !== 'investor') return forbidden();
+    if (!isPremiumActive(user)) return fail(403, 'SUBSCRIPTION_REQUIRED', 'تنبيهات الأسعار متاحة لمشتركي Premium');
+    const karat = Number(body.karat) as Karat;
+    const direction = body.direction === 'below' ? 'below' : 'above';
+    const target = D(String(body.target_price_per_gram ?? '0'));
+    if (!VALID_KARATS.includes(karat)) return invalid('karat', 'Input should be 18, 21, 22 or 24');
+    if (!target.gt(0)) return invalid('target_price_per_gram', 'Input should be greater than 0');
+    const now = karatPriceNow(karat);
+    if (direction === 'above' && target.lte(now)) {
+      return fail(422, 'VALIDATION_ERROR', 'السعر الحالي أعلى من هدفك، اختار سعر أعلى منه');
+    }
+    if (direction === 'below' && target.gte(now)) {
+      return fail(422, 'VALIDATION_ERROR', 'السعر الحالي أقل من هدفك، اختار سعر أقل منه');
+    }
+    const active = alertsStore.filter((a) => a.user_id === user.id && a.status === 'active').length;
+    if (active >= 10) return fail(422, 'VALIDATION_ERROR', 'الحد الأعلى 10 تنبيهات فعّالة');
+    const alert: AlertRec = {
+      id: uuid(),
+      user_id: user.id,
+      karat,
+      direction,
+      target,
+      status: 'active',
+      triggered_at: null,
+      created_at: iso(Date.now()),
+    };
+    alertsStore.unshift(alert);
+    return ok(alertOut(alert), 201);
+  }
+
+  const alertMatch = path.match(/^\/api\/alerts\/([^/]+)$/);
+  if (alertMatch && method === 'PATCH') {
+    if (!user) return unauthorized();
+    const alert = alertsStore.find((a) => a.id === decodeURIComponent(alertMatch[1]) && a.user_id === user.id);
+    if (!alert) return fail(404, 'NOT_FOUND', 'التنبيه غير موجود');
+    if (alert.status === 'active') alert.status = 'cancelled';
+    return ok(alertOut(alert));
+  }
+
+  // ---- Coming soon (public) -------------------------------------------------------
+  if (method === 'POST' && path === '/api/interest') {
+    const email = String(body.email ?? '')
+      .trim()
+      .toLowerCase();
+    const assetClass = body.asset_class;
+    if (!/^\S+@\S+\.\S+$/.test(email)) return invalid('email', 'value is not a valid email address');
+    if (assetClass !== 'real_estate' && assetClass !== 'oil')
+      return invalid('asset_class', 'Input should be real_estate or oil');
+    if (!interestStore.some((i) => i.email === email && i.asset_class === assetClass)) {
+      interestStore.unshift({ email, asset_class: assetClass, created_at: iso(Date.now()) });
+    }
+    const thanks =
+      assetClass === 'real_estate'
+        ? 'تم تسجيل اهتمامك بالعقارات، راح نبلغك أول ما تتوفر على صِلة.'
+        : 'تم تسجيل اهتمامك بالنفط، راح نبلغك أول ما يتوفر على صِلة.';
+    return ok({ message: thanks } satisfies W.InterestReplyOut, 202);
+  }
+
+  // ---- Administration (admin only) ------------------------------------------------
+  if (path.startsWith('/api/admin/')) {
+    if (!user) return unauthorized();
+    if (user.role !== 'admin') return fail(403, 'FORBIDDEN', 'هذه العملية متاحة لإدارة المنصة فقط');
+
+    const adminUserOut = (u: UserRec): W.AdminUserOut => ({
+      id: u.id,
+      role: u.role,
+      full_name: u.full_name,
+      email: u.email,
+      kyc_verified: u.kyc_verified,
+      is_active: u.is_active,
+      is_premium_active: isPremiumActive(u),
+      must_change_password: u.must_change_password,
+      created_at: u.created_at,
+    });
+    const target = (id: string) => {
+      const u = users.find((x) => x.id === decodeURIComponent(id));
+      if (!u) return { error: notFound() };
+      if (u.role === 'admin') return { error: fail(403, 'FORBIDDEN', 'ما تكدر تعدّل حساب مدير من هنا') };
+      return { u };
+    };
+
+    if (method === 'GET' && path === '/api/admin/overview') {
+      const active = listings.filter((l) => l.status === 'active');
+      return ok({
+        investors: users.filter((u) => u.role === 'investor').length,
+        sellers: users.filter((u) => u.role === 'seller').length,
+        inactive_accounts: users.filter((u) => !u.is_active).length,
+        premium_active: users.filter(isPremiumActive).length,
+        active_listings: active.length,
+        active_resale_listings: active.filter((l) => l.listing_type === 'investor_resale').length,
+        transactions: transactions.length,
+        volume_iqd: m2(transactions.reduce((sum, t) => sum.plus(t.total), D(0))),
+        commission_iqd: m2(transactions.reduce((sum, t) => sum.plus(t.commission), D(0))),
+        pending_password_requests: resetRequests.filter((r) => r.status === 'pending').length,
+        interest: {
+          real_estate: interestStore.filter((i) => i.asset_class === 'real_estate').length,
+          oil: interestStore.filter((i) => i.asset_class === 'oil').length,
+        },
+      } satisfies W.OverviewOut);
+    }
+
+    if (method === 'GET' && path === '/api/admin/users') {
+      const term = (q.get('q') ?? '').trim().toLowerCase();
+      const role = q.get('role');
+      const found = users
+        .filter((u) => !term || u.email.includes(term) || u.full_name.toLowerCase().includes(term))
+        .filter((u) => !role || u.role === role)
+        .sort((a, b) => b.created_at.localeCompare(a.created_at));
+      return ok(page(found.map(adminUserOut), q) satisfies W.PageAdminUserOut);
+    }
+
+    const resetMatch = path.match(/^\/api\/admin\/users\/([^/]+)\/reset-password$/);
+    if (method === 'POST' && resetMatch) {
+      const { u, error } = target(resetMatch[1]);
+      if (error) return error;
+      const alphabet = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      const temporary = Array.from({ length: 12 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join(
+        ''
+      );
+      u!.password = temporary;
+      u!.must_change_password = true;
+      u!.pwv = Date.now();
+      for (const r of resetRequests) {
+        if (r.status === 'pending' && (r.user_id === u!.id || r.email === u!.email)) {
+          r.status = 'resolved';
+          r.resolved_at = iso(Date.now());
+        }
+      }
+      audit('admin_password_reset', user.id, 'user', u!.id);
+      notify(
+        u!.id,
+        'password_reset',
+        'كلمة مرور جديدة',
+        'إدارة صِلة أصدرت إلك كلمة مرور مؤقتة. غيّرها أول ما تدخل.',
+        '/app/settings'
+      );
+      return ok({ user: adminUserOut(u!), temporary_password: temporary } satisfies W.TempPasswordOut);
+    }
+
+    const userMatch = path.match(/^\/api\/admin\/users\/([^/]+)$/);
+    if (method === 'PATCH' && userMatch) {
+      const { u, error } = target(userMatch[1]);
+      if (error) return error;
+      if (typeof body.is_active === 'boolean' && body.is_active !== u!.is_active) {
+        u!.is_active = body.is_active;
+        if (!body.is_active) {
+          for (const l of listings) if (l.seller_id === u!.id && l.status === 'active') l.status = 'suspended';
+        }
+        audit('admin_user_updated', user.id, 'user', u!.id, { is_active: body.is_active });
+      }
+      if (typeof body.kyc_verified === 'boolean') u!.kyc_verified = body.kyc_verified;
+      return ok(adminUserOut(u!));
+    }
+
+    if (method === 'GET' && path === '/api/admin/listings') {
+      const status = q.get('status');
+      const type = q.get('listing_type');
+      const found = listings
+        .filter((l) => (!status || l.status === status) && (!type || l.listing_type === type))
+        .sort((a, b) => b.created_at.localeCompare(a.created_at));
+      return ok(page(found.map(listingOut), q) satisfies W.PageListingOut);
+    }
+
+    const adminListingMatch = path.match(/^\/api\/admin\/listings\/([^/]+)$/);
+    if (method === 'PATCH' && adminListingMatch) {
+      const listing = listings.find((l) => l.id === decodeURIComponent(adminListingMatch[1]));
+      if (!listing) return notFound();
+      if (listing.status === 'sold_out' || listing.status === 'withdrawn') {
+        return fail(409, 'INVALID_STATUS_TRANSITION', 'العرض منتهي ولا يمكن تغيير حالته');
+      }
+      const status = body.status === 'suspended' ? 'suspended' : 'active';
+      if (listing.status !== status) {
+        listing.status = status;
+        audit('admin_listing_moderated', user.id, 'asset_listing', listing.id, { to: status });
+        if (status === 'suspended') {
+          notify(
+            listing.seller_id,
+            'listing_suspended',
+            'تم إيقاف عرض',
+            `إدارة صِلة أوقفت عرضك من عيار ${listing.karat} مؤقتاً.`,
+            listing.listing_type === 'investor_resale' ? '/app/portfolio' : '/app/listings'
+          );
+        }
+      }
+      return ok(listingOut(listing));
+    }
+
+    const resetOut = (r: ResetRec): W.ResetRequestOut => ({
+      ...r,
+      user_name: users.find((u) => u.id === r.user_id)?.full_name ?? null,
+    });
+
+    if (method === 'GET' && path === '/api/admin/password-requests') {
+      const status = q.get('status') ?? 'pending';
+      return ok(resetRequests.filter((r) => r.status === status).map(resetOut));
+    }
+
+    const requestMatch = path.match(/^\/api\/admin\/password-requests\/([^/]+)$/);
+    if (method === 'PATCH' && requestMatch) {
+      const r = resetRequests.find((x) => x.id === decodeURIComponent(requestMatch[1]));
+      if (!r) return notFound();
+      if (r.status === 'pending') {
+        r.status = 'dismissed';
+        r.resolved_at = iso(Date.now());
+      }
+      return ok(resetOut(r));
+    }
+
+    if (method === 'GET' && path === '/api/admin/audit') {
+      const type = q.get('event_type');
+      return ok(
+        page(
+          auditLog.filter((e) => !type || e.event_type === type),
+          q
+        ) satisfies W.PageAuditOut
+      );
+    }
+
+    if (method === 'GET' && path === '/api/admin/interest') return ok(interestStore);
+
+    return notFound();
   }
 
   // ---- System ------------------------------------------------------------------

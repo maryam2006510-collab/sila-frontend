@@ -86,3 +86,13 @@ export const useMediaQuery = (query: string): boolean => {
   }, [query]);
   return matches;
 };
+
+// The value after it has stopped changing for `delayMs` (search boxes: one request per pause)
+export const useDebounced = <T>(value: T, delayMs = 300): T => {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setSettled(value), delayMs);
+    return () => clearTimeout(id);
+  }, [value, delayMs]);
+  return settled;
+};

@@ -21,6 +21,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/auth/forgot-password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Ask the admins for a temporary password (same reply whether the e-mail exists) */
+    post: operations['forgot_password_api_auth_forgot_password_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/users/me/password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Change my password; returns fresh tokens (older sessions stop working) */
+    post: operations['change_password_api_users_me_password_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/auth/login': {
     parameters: {
       query?: never;
@@ -370,7 +404,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Verified gold balance (signature checked before returning) */
+    /** Verified gold balance (signature checked before returning), by karat */
     get: operations['my_ownership_api_ownership_me_get'];
     put?: never;
     post?: never;
@@ -378,6 +412,41 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  '/api/ownership/resale': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** My resale listings (open first) */
+    get: operations['my_resales_api_ownership_resale_get'];
+    put?: never;
+    /** Offer part of my holdings on the market (Workflow 09; price set by the server) */
+    post: operations['create_resale_api_ownership_resale_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/ownership/resale/{listing_id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Suspend, re-activate or withdraw (final, releases unsold grams) my resale listing */
+    patch: operations['update_resale_api_ownership_resale__listing_id__patch'];
     trace?: never;
   };
   '/api/health': {
@@ -414,10 +483,307 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/notifications': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Latest in-app notifications (newest first) and the unread count */
+    get: operations['list_notifications_api_notifications_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/notifications/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Mark notifications as read (all of them when ids is empty) */
+    post: operations['mark_read_api_notifications_read_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/alerts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** My price alerts (newest first) */
+    get: operations['list_alerts_api_alerts_get'];
+    put?: never;
+    /** Create a price alert (Premium; fires once when the karat price crosses the target) */
+    post: operations['create_alert_api_alerts_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/alerts/{alert_id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Cancel one of my alerts */
+    patch: operations['cancel_alert_api_alerts__alert_id__patch'];
+    trace?: never;
+  };
+  '/api/interest': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Join the waitlist for real estate or oil (public) */
+    post: operations['register_interest_api_interest_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/overview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Platform figures at a glance */
+    get: operations['overview_api_admin_overview_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/users': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Search users */
+    get: operations['users_api_admin_users_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/users/{user_id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Activate/deactivate an account (deactivating suspends its listings) or set KYC */
+    patch: operations['update_user_api_admin_users__user_id__patch'];
+    trace?: never;
+  };
+  '/api/admin/users/{user_id}/reset-password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Issue a temporary password (shown once; older sessions stop working) */
+    post: operations['reset_password_api_admin_users__user_id__reset_password_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/listings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Every listing, any status */
+    get: operations['listings_api_admin_listings_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/listings/{listing_id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Suspend or re-activate any listing (moderation) */
+    patch: operations['moderate_listing_api_admin_listings__listing_id__patch'];
+    trace?: never;
+  };
+  '/api/admin/password-requests': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** "Forgot password" requests (newest first) */
+    get: operations['password_requests_api_admin_password_requests_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/password-requests/{request_id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Dismiss a request (resolving happens through reset-password) */
+    patch: operations['dismiss_password_request_api_admin_password_requests__request_id__patch'];
+    trace?: never;
+  };
+  '/api/admin/audit': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Security and financial audit log */
+    get: operations['audit_log_api_admin_audit_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/admin/interest': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Waitlist signups */
+    get: operations['interest_api_admin_interest_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /** AdminListingPatch */
+    AdminListingPatch: {
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'active' | 'suspended';
+    };
+    /** AdminUserOut */
+    AdminUserOut: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      role: components['schemas']['UserRole'];
+      /** Full Name */
+      full_name: string;
+      /** Email */
+      email: string;
+      /** Kyc Verified */
+      kyc_verified: boolean;
+      /** Is Active */
+      is_active: boolean;
+      /** Is Premium Active */
+      is_premium_active: boolean;
+      /** Must Change Password */
+      must_change_password: boolean;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /** AdminUserPatch */
+    AdminUserPatch: {
+      /** Is Active */
+      is_active?: boolean | null;
+      /** Kyc Verified */
+      kyc_verified?: boolean | null;
+    };
     /** AdvisorBudget */
     AdvisorBudget: {
       /** Amount Iqd */
@@ -502,6 +868,85 @@ export interface components {
        */
       disclaimer: string;
     };
+    /**
+     * AlertDirection
+     * @enum {string}
+     */
+    AlertDirection: 'above' | 'below';
+    /** AlertIn */
+    AlertIn: {
+      /**
+       * Karat
+       * @example 21
+       */
+      karat: number;
+      direction: components['schemas']['AlertDirection'];
+      /**
+       * Target Price Per Gram
+       * @example 1500000
+       */
+      target_price_per_gram: number | string;
+    };
+    /** AlertOut */
+    AlertOut: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Karat */
+      karat: number;
+      direction: components['schemas']['AlertDirection'];
+      /** Target Price Per Gram */
+      target_price_per_gram: string;
+      status: components['schemas']['AlertStatus'];
+      /** Triggered At */
+      triggered_at: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /**
+     * AlertStatus
+     * @enum {string}
+     */
+    AlertStatus: 'active' | 'triggered' | 'cancelled';
+    /** AlertStatusIn */
+    AlertStatusIn: {
+      /** @description Only 'cancelled' can be set by the investor */
+      status: components['schemas']['AlertStatus'];
+    };
+    /** AuditOut */
+    AuditOut: {
+      /** Id */
+      id: number;
+      /** Event Type */
+      event_type: string;
+      /** Actor Id */
+      actor_id: string | null;
+      /** Entity Type */
+      entity_type: string | null;
+      /** Entity Id */
+      entity_id: string | null;
+      /** Data */
+      data: {
+        [key: string]: unknown;
+      };
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /** ChangePasswordIn */
+    ChangePasswordIn: {
+      /** Current Password */
+      current_password: string;
+      /** New Password */
+      new_password: string;
+    };
     /** CommissionTier */
     CommissionTier: {
       /** Label */
@@ -568,6 +1013,14 @@ export interface components {
       /** Message */
       message: string;
     };
+    /** ForgotPasswordIn */
+    ForgotPasswordIn: {
+      /**
+       * Email
+       * Format: email
+       */
+      email: string;
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -608,6 +1061,53 @@ export interface components {
       alerts: string[];
       market: components['schemas']['MarketTrend'];
       portfolio: components['schemas']['PortfolioPerformance'];
+    };
+    /** InterestIn */
+    InterestIn: {
+      /**
+       * Email
+       * Format: email
+       */
+      email: string;
+      /**
+       * Asset Class
+       * @enum {string}
+       */
+      asset_class: 'real_estate' | 'oil';
+    };
+    /** InterestReplyOut */
+    InterestReplyOut: {
+      /**
+       * Message
+       * @description Same reply for a new or a repeated signup
+       */
+      message: string;
+    };
+    /** InterestSignupOut */
+    InterestSignupOut: {
+      /** Email */
+      email: string;
+      /** Asset Class */
+      asset_class: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /** KaratBalance */
+    KaratBalance: {
+      /** Karat */
+      karat: number;
+      /** Owned Grams */
+      owned_grams: string;
+      /**
+       * Reserved Grams
+       * @description Offered in open resale listings
+       */
+      reserved_grams: string;
+      /** Available To Resell Grams */
+      available_to_resell_grams: string;
     };
     /** KaratHolding */
     KaratHolding: {
@@ -664,8 +1164,13 @@ export interface components {
        * Format: uuid
        */
       seller_id: string;
-      /** Seller Name */
+      /**
+       * Seller Name
+       * @description The seller's name; for an investor resale a neutral label, never the name
+       */
       seller_name: string;
+      /** @description seller_listing, or investor_resale (show 'إعادة بيع من مستثمر') */
+      listing_type: components['schemas']['ListingType'];
       /** Seller Kyc Verified */
       seller_kyc_verified: boolean;
       /** Karat */
@@ -707,7 +1212,7 @@ export interface components {
      * ListingStatus
      * @enum {string}
      */
-    ListingStatus: 'active' | 'sold_out' | 'suspended';
+    ListingStatus: 'active' | 'sold_out' | 'suspended' | 'withdrawn';
     /** ListingStatusIn */
     ListingStatusIn: {
       /**
@@ -717,6 +1222,11 @@ export interface components {
        */
       status: 'active' | 'suspended';
     };
+    /**
+     * ListingType
+     * @enum {string}
+     */
+    ListingType: 'seller_listing' | 'investor_resale';
     /** LoginIn */
     LoginIn: {
       /**
@@ -748,6 +1258,11 @@ export interface components {
        */
       expires_in: number;
       user: components['schemas']['UserOut'];
+    };
+    /** MarkReadIn */
+    MarkReadIn: {
+      /** Ids */
+      ids?: string[] | null;
     };
     /** MarketPricesOut */
     MarketPricesOut: {
@@ -862,6 +1377,74 @@ export interface components {
       /** Reason */
       reason: string;
     };
+    /** MessageOut */
+    MessageOut: {
+      /** Message */
+      message: string;
+    };
+    /** NotificationOut */
+    NotificationOut: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Kind */
+      kind: string;
+      /** Title */
+      title: string;
+      /** Body */
+      body: string;
+      /** Link */
+      link: string | null;
+      /** Read */
+      read: boolean;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /** NotificationsOut */
+    NotificationsOut: {
+      /** Items */
+      items: components['schemas']['NotificationOut'][];
+      /** Unread Count */
+      unread_count: number;
+    };
+    /** OverviewOut */
+    OverviewOut: {
+      /** Investors */
+      investors: number;
+      /** Sellers */
+      sellers: number;
+      /** Inactive Accounts */
+      inactive_accounts: number;
+      /** Premium Active */
+      premium_active: number;
+      /** Active Listings */
+      active_listings: number;
+      /** Active Resale Listings */
+      active_resale_listings: number;
+      /** Transactions */
+      transactions: number;
+      /**
+       * Volume Iqd
+       * @description Sum of total_paid_by_investor
+       */
+      volume_iqd: string;
+      /** Commission Iqd */
+      commission_iqd: string;
+      /** Pending Password Requests */
+      pending_password_requests: number;
+      /**
+       * Interest
+       * @description Waitlist signups per asset class
+       */
+      interest: {
+        [key: string]: number;
+      };
+    };
     /** OwnershipOut */
     OwnershipOut: {
       /**
@@ -880,6 +1463,11 @@ export interface components {
       digital_signature_token: string | null;
       /** Updated At */
       updated_at: string | null;
+      /**
+       * By Karat
+       * @description Derived from the transaction log; sums to the total
+       */
+      by_karat?: components['schemas']['KaratBalance'][];
       /**
        * Message
        * @description Shown when the investor owns nothing
@@ -900,6 +1488,28 @@ export interface components {
        * Format: date-time
        */
       updated_at: string;
+    };
+    /** Page[AdminUserOut] */
+    Page_AdminUserOut_: {
+      /** Items */
+      items: components['schemas']['AdminUserOut'][];
+      /** Total */
+      total: number;
+      /** Limit */
+      limit: number;
+      /** Offset */
+      offset: number;
+    };
+    /** Page[AuditOut] */
+    Page_AuditOut_: {
+      /** Items */
+      items: components['schemas']['AuditOut'][];
+      /** Total */
+      total: number;
+      /** Limit */
+      limit: number;
+      /** Offset */
+      offset: number;
     };
     /** Page[ListingOut] */
     Page_ListingOut_: {
@@ -1081,6 +1691,62 @@ export interface components {
       /** Refresh Token */
       refresh_token: string;
     };
+    /** ResaleIn */
+    ResaleIn: {
+      /**
+       * Karat
+       * @example 21
+       */
+      karat: number;
+      /**
+       * Weight Grams
+       * @example 84.250
+       */
+      weight_grams: number | string;
+    };
+    /** ResaleStatusIn */
+    ResaleStatusIn: {
+      /**
+       * Status
+       * @description suspended keeps the grams reserved; withdrawn is final and releases them
+       */
+      status: string;
+    };
+    /** ResetRequestOut */
+    ResetRequestOut: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Email */
+      email: string;
+      /** User Id */
+      user_id: string | null;
+      /** User Name */
+      user_name: string | null;
+      status: components['schemas']['ResetRequestStatus'];
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Resolved At */
+      resolved_at: string | null;
+    };
+    /** ResetRequestPatch */
+    ResetRequestPatch: {
+      /**
+       * Status
+       * @constant
+       */
+      status: 'dismissed';
+    };
+    /**
+     * ResetRequestStatus
+     * @enum {string}
+     */
+    ResetRequestStatus: 'pending' | 'resolved' | 'dismissed';
     /** RiskAnalysisIn */
     RiskAnalysisIn: {
       /**
@@ -1143,7 +1809,11 @@ export interface components {
     RiskProfile: 'low' | 'medium' | 'high';
     /** SignupIn */
     SignupIn: {
-      role: components['schemas']['UserRole'];
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'investor' | 'seller';
       /**
        * Full Name
        * @example زينب الموسوي
@@ -1197,6 +1867,15 @@ export interface components {
      * @enum {string}
      */
     SubscriptionTier: 'free' | 'premium';
+    /** TempPasswordOut */
+    TempPasswordOut: {
+      user: components['schemas']['AdminUserOut'];
+      /**
+       * Temporary Password
+       * @description Shown once. Give it to the user; they must choose a new one at sign-in.
+       */
+      temporary_password: string;
+    };
     /** TokenOut */
     TokenOut: {
       /** Access Token */
@@ -1228,6 +1907,12 @@ export interface components {
       asset_id: string;
       /** Karat */
       karat: number;
+      /**
+       * Side
+       * @description buy: I bought. sell: sold from my listing (seller) or my resale (investor)
+       * @enum {string}
+       */
+      side: 'buy' | 'sell';
       /** Seller Name */
       seller_name: string;
       /**
@@ -1277,6 +1962,11 @@ export interface components {
        */
       is_premium_active: boolean;
       /**
+       * Must Change Password
+       * @description Signed in with a temporary password from an admin: ask for a new one first
+       */
+      must_change_password: boolean;
+      /**
        * Created At
        * Format: date-time
        */
@@ -1286,7 +1976,7 @@ export interface components {
      * UserRole
      * @enum {string}
      */
-    UserRole: 'investor' | 'seller';
+    UserRole: 'investor' | 'seller' | 'admin';
     /** ValidationError */
     ValidationError: {
       /** Location */
@@ -1342,6 +2032,99 @@ export interface operations {
       };
       /** @description Error */
       422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  forgot_password_api_auth_forgot_password_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ForgotPasswordIn'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MessageOut'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  change_password_api_users_me_password_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChangePasswordIn'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['LoginOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      429: {
         headers: {
           [name: string]: unknown;
         };
@@ -2591,6 +3374,187 @@ export interface operations {
       };
     };
   };
+  my_resales_api_ownership_resale_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListingOut'][];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  create_resale_api_ownership_resale_post: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description Optional. Retrying with the same key returns the original result. */
+        'Idempotency-Key'?: string | null;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResaleIn'];
+      };
+    };
+    responses: {
+      /** @description Idempotent replay */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListingOut'];
+        };
+      };
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListingOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  update_resale_api_ownership_resale__listing_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        listing_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResaleStatusIn'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListingOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
   health_api_health_get: {
     parameters: {
       query?: never;
@@ -2627,6 +3591,824 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['PublicConfigOut'];
+        };
+      };
+    };
+  };
+  list_notifications_api_notifications_get: {
+    parameters: {
+      query?: {
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationsOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  mark_read_api_notifications_read_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MarkReadIn'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationsOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  list_alerts_api_alerts_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AlertOut'][];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  create_alert_api_alerts_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AlertIn'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AlertOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  cancel_alert_api_alerts__alert_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        alert_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AlertStatusIn'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AlertOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  register_interest_api_interest_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InterestIn'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InterestReplyOut'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  overview_api_admin_overview_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OverviewOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  users_api_admin_users_get: {
+    parameters: {
+      query?: {
+        /** @description Name or e-mail contains */
+        q?: string | null;
+        role?: components['schemas']['UserRole'] | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Page_AdminUserOut_'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  update_user_api_admin_users__user_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        user_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminUserPatch'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminUserOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  reset_password_api_admin_users__user_id__reset_password_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        user_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TempPasswordOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  listings_api_admin_listings_get: {
+    parameters: {
+      query?: {
+        status?: components['schemas']['ListingStatus'] | null;
+        listing_type?: components['schemas']['ListingType'] | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Page_ListingOut_'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  moderate_listing_api_admin_listings__listing_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        listing_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminListingPatch'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListingOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  password_requests_api_admin_password_requests_get: {
+    parameters: {
+      query?: {
+        status?: components['schemas']['ResetRequestStatus'] | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ResetRequestOut'][];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  dismiss_password_request_api_admin_password_requests__request_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        request_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResetRequestPatch'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ResetRequestOut'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  audit_log_api_admin_audit_get: {
+    parameters: {
+      query?: {
+        event_type?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Page_AuditOut_'];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  interest_api_admin_interest_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InterestSignupOut'][];
+        };
+      };
+      /** @description Error */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description Error */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
         };
       };
     };

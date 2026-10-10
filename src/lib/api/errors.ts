@@ -1,6 +1,9 @@
 // src/lib/api/errors.ts
 // Unified error shape (API_CONTRACT.md §2): { error_code, message, status, details? }.
-// Branch on the code; show the server's Arabic `message` to the user.
+// Branch on the code; show the server's Arabic `message` to the user (errorMessage).
+
+import { useLocaleStore } from '@/lib/direction';
+import { messagesNow } from '@/i18n';
 
 export type ApiErrorCode =
   | 'VALIDATION_ERROR'
@@ -22,6 +25,8 @@ export type ApiErrorCode =
   | 'AI_UNAVAILABLE'
   | 'PRICE_UNAVAILABLE'
   | 'INTERNAL_ERROR'
+  | 'ACCOUNT_DISABLED'
+  | 'INSUFFICIENT_HOLDINGS'
   // Client-side only: the request never reached the server
   | 'NETWORK_ERROR';
 
@@ -59,8 +64,20 @@ export const isApiError = (err: unknown): err is ApiError => err instanceof ApiE
 export const hasErrorCode = (err: unknown, code: ApiErrorCode): boolean => isApiError(err) && err.code === code;
 
 // The server's Arabic message when there is one, else the caller's fallback
-export const errorMessage = (err: unknown, fallback: string): string =>
-  isApiError(err) && err.message ? err.message : fallback;
+// Arabic shows the server's message. Other languages show their text for the code (D45):
+// the specific reason when there is one, the caller's fallback for generic failures.
+const GENERIC_CODES = new Set(['VALIDATION_ERROR', 'INTERNAL_ERROR']);
+
+export const errorMessage = (err: unknown, fallback: string): string => {
+  if (!isApiError(err)) return fallback;
+  if (useLocaleStore.getState().locale === 'ar') return err.message || fallback;
+  if (GENERIC_CODES.has(err.code)) return fallback;
+  return messagesNow().errors[err.code] ?? fallback;
+};
+
+// Text written by the server (Arabic only): shown as is in Arabic, replaced elsewhere
+export const serverText = (text: string | null | undefined, local: string): string =>
+  useLocaleStore.getState().locale === 'ar' && text ? text : local;
 
 // The message for one form field, from VALIDATION_ERROR details
 export const fieldError = (err: unknown, field: string): string | undefined =>

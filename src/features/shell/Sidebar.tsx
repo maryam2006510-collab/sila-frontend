@@ -73,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onSwitchRole }
       </div>
 
       <nav className="flex-1 py-4 px-3 flex flex-col gap-1 overflow-y-auto" aria-label={t.shell.nav.dashboard}>
-        {sidebarItems(user.role).map((item) => {
+        {sidebarItems(user.role, t.shell.nav).map((item) => {
           const link = (
             <NavLink
               key={item.to}
@@ -157,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onSwitchRole }
                   )}
                 </p>
                 <p className="m-0 text-sm text-sidebar-fg-muted truncate">
-                  {isInvestor ? t.shell.roleInvestor : t.shell.roleSeller}
+                  {user.role === 'admin' ? t.shell.roleAdmin : isInvestor ? t.shell.roleInvestor : t.shell.roleSeller}
                   {!user.kyc_verified && ` · ${t.shell.notVerified}`}
                 </p>
               </div>

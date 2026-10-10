@@ -40,6 +40,7 @@ const tx = (karat: Transaction['karat'], grams: number, principal = 0): Transact
   asset_id: 'a',
   karat,
   seller_name: 's',
+  side: 'buy',
   buyer_ref: null,
   purchased_weight_grams: grams,
   execution_price_per_gram: 0,

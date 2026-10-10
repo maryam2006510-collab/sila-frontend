@@ -3,6 +3,8 @@
 // Every figure in the UI goes through these: Western digits in both locales,
 // Intl formatting only, a real minus sign (−) for displayed deltas.
 
+import { Locale, useLocaleStore } from './direction';
+
 const MINUS = '−';
 
 const iqdFormat = new Intl.NumberFormat('ar-IQ', { numberingSystem: 'latn', maximumFractionDigits: 0 });
@@ -24,11 +26,16 @@ const compactFormat = new Intl.NumberFormat('en-US', {
   compactDisplay: 'short',
   maximumFractionDigits: 2,
 });
-const amountWordsFormat = new Intl.NumberFormat('ar-IQ-u-nu-latn', {
-  notation: 'compact',
-  compactDisplay: 'long',
-  maximumFractionDigits: 2,
+// Words, dates and relative times follow the interface language (D45); digits stay Western
+const byLocale = <T>(make: (tag: string) => T): Record<Locale, T> => ({
+  ar: make('ar-IQ-u-nu-latn'),
+  en: make('en-GB'),
 });
+const locale = (): Locale => useLocaleStore.getState().locale;
+
+const amountWordsFormat = byLocale(
+  (tag) => new Intl.NumberFormat(tag, { notation: 'compact', compactDisplay: 'long', maximumFractionDigits: 2 })
+);
 const usdFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
 
 const withRealMinus = (s: string) => s.replace('-', MINUS);
@@ -52,43 +59,41 @@ export const fmtCompact = (v: number): string => withRealMinus(compactFormat.for
 
 // Round amounts in Arabic words with Western digits ("500 ألف", "5 ملايين"), same rule as above:
 // used on quick-pick chips that fill the exact value
-export const fmtAmountWords = (v: number): string => withRealMinus(amountWordsFormat.format(v));
+export const fmtAmountWords = (v: number): string => withRealMinus(amountWordsFormat[locale()].format(v));
 
-// Iraqi month names (تشرين الأول), Western digits
-const dateFormat = new Intl.DateTimeFormat('ar-IQ-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' });
-// 19/10/2026 (the locale adds RLM marks so it reads day first in RTL): for tight spaces only
-const dateNumericFormat = new Intl.DateTimeFormat('ar-IQ-u-nu-latn', {
-  day: 'numeric',
-  month: 'numeric',
-  year: 'numeric',
-});
-const dateTimeFormat = new Intl.DateTimeFormat('ar-IQ-u-nu-latn', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-});
-const timeFormat = new Intl.DateTimeFormat('ar-IQ-u-nu-latn', { hour: '2-digit', minute: '2-digit' });
+// Iraqi month names in Arabic (تشرين الأول), "19 October 2026" in English, Western digits
+const dateFormat = byLocale((tag) => new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric' }));
+// 19/10/2026 (the Arabic locale adds RLM marks so it reads day first in RTL): for tight spaces only
+const dateNumericFormat = byLocale(
+  (tag) => new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'numeric', year: 'numeric' })
+);
+const dateTimeFormat = byLocale(
+  (tag) =>
+    new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+);
+const timeFormat = byLocale((tag) => new Intl.DateTimeFormat(tag, { hour: '2-digit', minute: '2-digit' }));
 
 const toDate = (v: Date | string | number) => (v instanceof Date ? v : new Date(v));
 
-export const fmtDate = (v: Date | string | number): string => dateFormat.format(toDate(v));
-export const fmtDateNumeric = (v: Date | string | number): string => dateNumericFormat.format(toDate(v));
-export const fmtDateTime = (v: Date | string | number): string => dateTimeFormat.format(toDate(v));
-export const fmtTime = (v: Date | string | number): string => timeFormat.format(toDate(v));
+export const fmtDate = (v: Date | string | number): string => dateFormat[locale()].format(toDate(v));
+export const fmtDateNumeric = (v: Date | string | number): string => dateNumericFormat[locale()].format(toDate(v));
+export const fmtDateTime = (v: Date | string | number): string => dateTimeFormat[locale()].format(toDate(v));
+export const fmtTime = (v: Date | string | number): string => timeFormat[locale()].format(toDate(v));
 
-const arRelative = new Intl.RelativeTimeFormat('ar-u-nu-latn', { numeric: 'auto' });
+const relative = byLocale((tag) => new Intl.RelativeTimeFormat(tag, { numeric: 'auto' }));
+const arRelative = relative.ar;
 
-// "خلال 30 ثانية", "خلال دقيقة واحدة": a wait in seconds, with Arabic number agreement
-export const fmtRelativeFuture = (seconds: number): string =>
-  seconds < 60 ? arRelative.format(seconds, 'second') : arRelative.format(Math.ceil(seconds / 60), 'minute');
+// "خلال 30 ثانية" / "in 30 seconds": a wait in seconds, with Arabic number agreement
+export const fmtRelativeFuture = (seconds: number): string => {
+  const format = relative[locale()];
+  return seconds < 60 ? format.format(seconds, 'second') : format.format(Math.ceil(seconds / 60), 'minute');
+};
 
-export const fmtRelativeTime = (time: Date | string | number, locale: 'ar' | 'en' = 'ar'): string => {
+export const fmtRelativeTime = (time: Date | string | number, lang: Locale = locale()): string => {
   const date = toDate(time);
   const diffInSeconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
 
-  if (locale === 'ar') {
+  if (lang === 'ar') {
     // Intl handles Arabic number agreement (ثانيتين، 5 ثوانٍ، 3 دقائق), Western digits
     if (diffInSeconds < 5) return 'الآن';
     if (diffInSeconds < 60) return arRelative.format(-diffInSeconds, 'second');

@@ -4,11 +4,15 @@
 // shapes live in api/wire.ts and are converted in api/adapters.ts (the only place that knows
 // both). Client-side arithmetic on these values goes through decimal.js (lib/pricing.ts).
 
-export type UserRole = 'investor' | 'seller';
+// admin: created by a server command only, never through signup
+export type UserRole = 'investor' | 'seller' | 'admin';
 export type RiskProfile = 'low' | 'medium' | 'high';
 export type SubscriptionTier = 'free' | 'premium';
 export type Karat = 18 | 21 | 22 | 24;
-export type ListingStatus = 'active' | 'sold_out' | 'suspended';
+// withdrawn: an investor resale taken off the market for good (unsold grams released)
+export type ListingStatus = 'active' | 'sold_out' | 'suspended' | 'withdrawn';
+// investor_resale: part of an investor's holdings offered on the market (Workflow 09)
+export type ListingType = 'seller_listing' | 'investor_resale';
 export type AiEngine = 'rules' | 'llm';
 export type RiskLevel = 'low' | 'medium' | 'high';
 
@@ -23,6 +27,8 @@ export interface User {
   subscription_expiry_date: string | null;
   // Premium gate: the server's date check, never subscription_tier (contract §3.6)
   is_premium_active: boolean;
+  // Signed in with a temporary password from an admin: a new one comes first
+  must_change_password: boolean;
   created_at: string;
 }
 
@@ -61,7 +67,9 @@ export interface PriceHistory {
 export interface AssetListing {
   id: string;
   seller_id: string;
+  // For an investor resale a neutral label from the server, never the investor's name
   seller_name: string;
+  listing_type: ListingType;
   seller_verified: boolean;
   karat: Karat;
   total_weight_grams: number;
@@ -142,6 +150,8 @@ export interface Transaction {
   id: string;
   asset_id: string;
   karat: Karat;
+  // buy: I bought. sell: sold from my listing (seller) or my resale (investor)
+  side: 'buy' | 'sell';
   seller_name: string;
   // Sellers see this pseudonym only, never the buyer's identity
   buyer_ref: string | null;
@@ -174,6 +184,16 @@ export interface Ownership {
   message: string | null;
   // Always shown next to the balance (System Design §6)
   disclaimer: string | null;
+  // Per karat, derived from the transaction log; sums to the total
+  by_karat: KaratBalance[];
+}
+
+export interface KaratBalance {
+  karat: Karat;
+  owned_grams: number;
+  // Offered in open resale listings: still owned until sold
+  reserved_grams: number;
+  available_to_resell_grams: number;
 }
 
 export interface MatchResult {
@@ -293,7 +313,8 @@ export interface ServerConfig {
 }
 
 export interface SignupRequest {
-  role: UserRole;
+  // Admins are created on the server only
+  role: Exclude<UserRole, 'admin'>;
   full_name: string;
   email: string;
   password: string;
@@ -312,4 +333,94 @@ export interface AuthTokens {
 
 export interface LoginResult extends AuthTokens {
   user: User;
+}
+
+// ---- Integrated platform (2026-10-10) ---------------------------------------
+
+// GET /api/notifications (in-app only, the topbar bell)
+export interface AppNotification {
+  id: string;
+  kind: string;
+  title: string;
+  body: string;
+  // In-app path to open
+  link: string | null;
+  read: boolean;
+  created_at: string;
+}
+
+export interface Notifications {
+  items: AppNotification[];
+  unread_count: number;
+}
+
+// Premium price alerts
+export type AlertDirection = 'above' | 'below';
+export type AlertStatus = 'active' | 'triggered' | 'cancelled';
+
+export interface PriceAlert {
+  id: string;
+  karat: Karat;
+  direction: AlertDirection;
+  target_price_per_gram: number;
+  status: AlertStatus;
+  triggered_at: string | null;
+  created_at: string;
+}
+
+export type InterestAssetClass = 'real_estate' | 'oil';
+
+// Administration (admin only)
+export interface AdminOverview {
+  investors: number;
+  sellers: number;
+  inactive_accounts: number;
+  premium_active: number;
+  active_listings: number;
+  active_resale_listings: number;
+  transactions: number;
+  volume_iqd: number;
+  commission_iqd: number;
+  pending_password_requests: number;
+  interest: Record<InterestAssetClass, number>;
+}
+
+export interface AdminUser {
+  id: string;
+  role: UserRole;
+  full_name: string;
+  email: string;
+  kyc_verified: boolean;
+  is_active: boolean;
+  is_premium_active: boolean;
+  must_change_password: boolean;
+  created_at: string;
+}
+
+export type ResetRequestStatus = 'pending' | 'resolved' | 'dismissed';
+
+export interface PasswordResetRequest {
+  id: string;
+  email: string;
+  user_id: string | null;
+  user_name: string | null;
+  status: ResetRequestStatus;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+export interface AuditEntry {
+  id: number;
+  event_type: string;
+  actor_id: string | null;
+  entity_type: string | null;
+  entity_id: string | null;
+  data: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface InterestSignup {
+  email: string;
+  asset_class: InterestAssetClass;
+  created_at: string;
 }

@@ -41,6 +41,12 @@ export const ar = {
       market: 'السوق',
       match: 'المطابقة الذكية',
       advisor: 'المستشار الذكي',
+      adminUsers: 'المستخدمون',
+      adminListings: 'العروض',
+      adminRequests: 'طلبات كلمة المرور',
+      adminRequestsShort: 'الطلبات',
+      adminAudit: 'سجل الأمان',
+      adminInterest: 'المهتمون',
       portfolio: 'محفظتي',
       transactions: 'سجل العمليات',
       premium: 'رؤى Premium',
@@ -52,6 +58,7 @@ export const ar = {
       // Short forms for the mobile tab bar
       home: 'الرئيسية',
       matchShort: 'المطابقة',
+      portfolioShort: 'محفظتي',
       addShort: 'إضافة',
       salesShort: 'المبيعات',
     },
@@ -69,12 +76,16 @@ export const ar = {
     skipToContent: 'انتقل إلى المحتوى',
     roleInvestor: 'مستثمر',
     roleSeller: 'بائع',
+    roleAdmin: 'إدارة المنصة',
     verified: 'موثّق',
     notVerified: 'غير موثّق',
     kycPendingInvestor: 'التوثيق: سيُطلب عند أول عملية شراء',
     kycPendingSeller: 'التوثيق: سيُطلب عند نشر أول عرض',
     themeToLight: 'الوضع النهاري',
     themeToDark: 'الوضع الليلي',
+    // The other language, written in that language, and the button's full name
+    otherLanguage: 'English',
+    switchLanguage: 'التبديل إلى الإنكليزية',
     notifications: 'الإشعارات',
     newBadge: 'جديد',
     placeholder: 'هذه الشاشة قيد البناء.',
@@ -300,6 +311,8 @@ export const ar = {
     browseMarket: 'تصفح السوق',
     // Fallback only: the server's `message` explains an empty result
     noResults: 'لا توجد عروض تناسب هذه الميزانية حالياً.',
+    // Fallback only: the server's `message` heads the results
+    found: (n: number) => `وجدنا ${n} عروض تناسب ميزانيتك`,
     budgetLine: 'ميزانيتك:',
     editBudget: 'تعديل الميزانية',
     bestMatch: 'الأنسب لك',
@@ -312,6 +325,198 @@ export const ar = {
     reasonSourceLlm: 'اقتراح ذكي بصياغة نموذج لغوي، والأرقام نفسها',
     buyThis: 'اشترِ هذا العرض',
     disclosure: 'اقتراحات مساعدة وليست نصيحة مالية. القرار لك.',
+  },
+  resale: {
+    sectionTitle: 'رصيدك حسب العيار',
+    sectionIntro: 'تكدر تعرض جزء من رصيدك للبيع بالسوق. السعر تحدده صِلة من السعر الحي، والعمولة يدفعها المشتري.',
+    owned: 'مملوك',
+    reserved: 'معروض للبيع',
+    available: 'متاح للبيع',
+    sell: 'اعرض للبيع',
+    // `k` is the karat
+    sellKarat: (k: number) => `اعرض عيار ${k} للبيع`,
+    dialogTitle: 'اعرض ذهبك للبيع',
+    dialogIntro: 'عرضك يدخل السوق بعلامة "إعادة بيع من مستثمر" وبدون اسمك.',
+    gramsLabel: 'الكمية بالغرام',
+    // `g` is formatted grams
+    maxHint: (g: string) => `المتاح إلك: ${g} غ`,
+    useMax: 'كل المتاح',
+    tooMuch: 'الكمية أكبر من المتاح إلك من هذا العيار.',
+    estimate: 'قيمتها بسعر اليوم',
+    estimateHint: 'السعر الفعلي يتحدد بالسعر الحي وقت ما ينشتري عرضك، وتستلم قيمة الذهب كاملة.',
+    publish: 'انشر العرض',
+    published: 'انتشر عرضك بالسوق.',
+    publishFailed: 'تعذّر نشر العرض.',
+    myTitle: 'عروض إعادة البيع مالتك',
+    // `left` and `total` are formatted grams
+    remaining: (left: string, total: string) => `باقي ${left} من ${total} غ`,
+    suspend: 'إيقاف مؤقت',
+    activate: 'إعادة تفعيل',
+    withdraw: 'سحب العرض',
+    withdrawTitle: 'سحب العرض نهائياً؟',
+    withdrawBody: 'الكمية غير المباعة ترجع لرصيدك المتاح للبيع، وهذا العرض ما يرجع يتفعّل.',
+    withdrawConfirm: 'اسحب العرض',
+    changed: 'تحدّثت حالة العرض.',
+    changeFailed: 'تعذّر تحديث العرض.',
+    status: {
+      active: 'نشط',
+      suspended: 'موقوف مؤقتاً',
+      sold_out: 'انباع بالكامل',
+      withdrawn: 'مسحوب',
+    },
+    badge: 'إعادة بيع من مستثمر',
+    // Shown as the seller of a resale offer (the server sends the same words)
+    sellerLabel: 'مستثمر على صِلة',
+    ownListing: 'هذا عرض إعادة البيع مالتك، فما تكدر تشتري منه.',
+  },
+  admin: {
+    overviewTitle: 'المنصة اليوم',
+    investors: 'المستثمرون',
+    sellers: 'البائعون',
+    // `n` deactivated accounts
+    inactive: (n: number) => `${n} حساب موقوف`,
+    activeListings: 'العروض النشطة',
+    // `n` investor resale listings among them
+    resaleShare: (n: number) => `منها ${n} إعادة بيع`,
+    transactions: 'العمليات',
+    volume: 'حجم التداول',
+    commission: 'عمولات المنصة',
+    premium: 'مشتركو Premium',
+    requests: 'طلبات كلمة مرور معلّقة',
+    openRequests: 'افتح الطلبات',
+    interest: 'المهتمون بالقادم',
+    // `a` real estate, `b` oil
+    interestSplit: (a: number, b: number) => `عقارات ${a}، نفط ${b}`,
+    loadFailed: 'تعذّر تحميل البيانات.',
+    loadMore: 'عرض المزيد',
+    all: 'الكل',
+    search: 'ابحث بالاسم أو البريد الإلكتروني',
+    roles: { investor: 'مستثمر', seller: 'بائع', admin: 'مدير' },
+    inactiveBadge: 'موقوف',
+    activeBadge: 'فعّال',
+    verified: 'موثّق',
+    unverified: 'غير موثّق',
+    mustChange: 'ينتظر كلمة مرور جديدة',
+    deactivate: 'إيقاف الحساب',
+    activate: 'تفعيل الحساب',
+    verify: 'توثيق',
+    unverify: 'إلغاء التوثيق',
+    resetPassword: 'كلمة مرور مؤقتة',
+    deactivateTitle: 'إيقاف الحساب؟',
+    deactivateBody: 'صاحب الحساب يطلع من كل الأجهزة وما يكدر يدخل، وعروضه النشطة تتوقف.',
+    updated: 'تحدّث الحساب.',
+    updateFailed: 'تعذّر تحديث الحساب.',
+    tempTitle: 'كلمة المرور المؤقتة',
+    // `name` of the user
+    tempBody: (name: string) =>
+      `سلّم كلمة المرور هاي إلى ${name} بطريقة آمنة. تطلع مرة وحدة بس، ولازم يغيّرها أول ما يدخل.`,
+    copy: 'نسخ',
+    copied: 'انتسخت.',
+    done: 'تم',
+    noUsers: 'ماكو مستخدمين يطابقون البحث.',
+    listingStatus: { active: 'نشط', suspended: 'موقوف', sold_out: 'مباع', withdrawn: 'مسحوب' },
+    listingTypes: { seller_listing: 'عروض البائعين', investor_resale: 'إعادة بيع' },
+    // `left` and `total` formatted grams
+    remaining: (left: string, total: string) => `باقي ${left} من ${total} غ`,
+    suspend: 'إيقاف',
+    reactivate: 'إعادة تفعيل',
+    moderated: 'تحدّثت حالة العرض.',
+    noListings: 'ماكو عروض بهذا الفلتر.',
+    requestStatus: { pending: 'معلّقة', resolved: 'محلولة', dismissed: 'متجاهلة' },
+    unknownEmail: 'بريد غير مسجل',
+    dismiss: 'تجاهل',
+    dismissed: 'انتجاهل الطلب.',
+    noRequests: 'ماكو طلبات هنا.',
+    eventFilter: 'نوع الحدث',
+    actor: 'المنفّذ',
+    system: 'النظام',
+    details: 'التفاصيل',
+    noEvents: 'ماكو أحداث.',
+    events: {
+      transaction_executed: 'عملية شراء',
+      ownership_updated: 'تحديث رصيد موقّع',
+      integrity_check_failed: 'فشل التحقق من التوقيع',
+      listing_created: 'عرض جديد',
+      resale_listed: 'عرض إعادة بيع',
+      resale_status_changed: 'تغيير عرض إعادة بيع',
+      resale_payout: 'دفع لمستثمر بائع',
+      listing_status_changed: 'تغيير حالة عرض',
+      kyc_verified: 'توثيق هوية',
+      mock_payment: 'دفع وهمي',
+      password_changed: 'تغيير كلمة المرور',
+      admin_password_reset: 'كلمة مرور مؤقتة من الإدارة',
+      admin_user_updated: 'تعديل حساب من الإدارة',
+      admin_listing_moderated: 'إيقاف أو تفعيل عرض من الإدارة',
+      admin_reset_request_dismissed: 'تجاهل طلب كلمة مرور',
+      price_alert_triggered: 'تنبيه سعر وصل',
+      admin_created: 'إنشاء حساب مدير',
+    } as Record<string, string>,
+    interestTitle: 'المهتمون بالعقارات والنفط',
+    assetClass: { real_estate: 'عقارات', oil: 'نفط' },
+    noInterest: 'ماكو تسجيلات بعد.',
+  },
+  password: {
+    forgotLink: 'نسيت كلمة المرور؟',
+    forgotTitle: 'استرجاع كلمة المرور',
+    forgotIntro: 'اكتب بريدك الإلكتروني، وإدارة صِلة تتواصل وياك بكلمة مرور مؤقتة.',
+    forgotSubmit: 'أرسل الطلب',
+    forgotFailed: 'تعذّر إرسال الطلب، حاول مرة ثانية.',
+    // Fallback only: the server's reply is shown
+    forgotDone: 'إذا البريد الإلكتروني مسجل عدنا، طلبك وصل لإدارة صِلة، وراح يتواصلون وياك بكلمة مرور مؤقتة.',
+    backToLogin: 'رجوع لتسجيل الدخول',
+    changeTitle: 'تغيير كلمة المرور',
+    changeIntro: 'بعد التغيير، الأجهزة الثانية تحتاج دخول من جديد.',
+    forcedTitle: 'اختار كلمة مرور جديدة',
+    forcedIntro: 'دخلت بكلمة مرور مؤقتة من إدارة صِلة. اختار كلمة مرور جديدة حتى تكمل.',
+    current: 'كلمة المرور الحالية',
+    temporary: 'كلمة المرور المؤقتة',
+    next: 'كلمة المرور الجديدة',
+    confirm: 'أعد كتابة كلمة المرور الجديدة',
+    tooShort: 'كلمة المرور لازم تكون 8 أحرف أو أكثر',
+    mismatch: 'كلمتا المرور غير متطابقتين',
+    required: 'هذا الحقل مطلوب',
+    submit: 'احفظ كلمة المرور',
+    done: 'تغيّرت كلمة المرور.',
+    failed: 'تعذّر تغيير كلمة المرور.',
+    logout: 'تسجيل الخروج',
+  },
+  priceAlerts: {
+    title: 'تنبيهات الأسعار',
+    intro: 'حدد سعر، ونبلغك بالجرس أول ما يوصله السعر الحي.',
+    karat: 'العيار',
+    direction: 'لما السعر',
+    above: 'يرتفع إلى',
+    below: 'ينزل إلى',
+    target: 'السعر المستهدف للغرام',
+    // `price` is formatted with its unit
+    current: (price: string) => `السعر الحالي: ${price}`,
+    create: 'أضف التنبيه',
+    created: 'انضاف التنبيه.',
+    createFailed: 'تعذّر إضافة التنبيه.',
+    none: 'ما عندك تنبيهات بعد.',
+    // `k` karat, `dir` "يرتفع إلى" / "ينزل إلى", `price` formatted
+    summary: (k: number, dir: string, price: string) => `عيار ${k} ${dir} ${price}`,
+    status: { active: 'فعّال', triggered: 'وصل السعر', cancelled: 'ملغي' },
+    cancel: 'إلغاء',
+    cancelLabel: 'إلغاء التنبيه',
+  },
+  notifications: {
+    title: 'الإشعارات',
+    // `n` unread notifications
+    labelUnread: (n: number) => `الإشعارات، ${n} غير مقروءة`,
+    markAll: 'تحديد الكل كمقروء',
+    empty: 'ما عندك إشعارات بعد.',
+    failed: 'تعذّر تحميل الإشعارات.',
+    // Fallback titles by kind: Arabic shows the server's own title and text
+    kinds: {
+      purchase_completed: 'تمت عملية الشراء',
+      resale_sold: 'انباع جزء من عرضك',
+      listing_sold: 'عملية بيع جديدة',
+      listing_suspended: 'تم إيقاف عرضك',
+      password_reset: 'كلمة مرور جديدة',
+      password_reset_request: 'طلب استرجاع كلمة مرور',
+      price_alert: 'وصل تنبيه السعر',
+    } as Record<string, string>,
   },
   advisor: {
     title: 'المستشار الذكي',
@@ -370,6 +575,8 @@ export const ar = {
     retry: 'إعادة المحاولة',
     entryTitle: 'اسأل المستشار الذكي',
     entryBody: 'سؤال بسيط بالعربي، وجواب بأسعار اليوم وعروض تكدر تشتريها.',
+    // Fallback only: the server's disclaimer is shown under every answer
+    disclaimer: 'هذي المعلومات استرشادية وليست نصيحة مالية. قرار الشراء يرجعلك.',
   },
   checkout: {
     stepQuantity: 'الكمية',
@@ -454,6 +661,12 @@ export const ar = {
     colCommission: 'العمولة',
     colTotal: 'المبلغ المدفوع',
     colReceived: 'المبلغ المستلم',
+    colSide: 'النوع',
+    colParty: 'الطرف الآخر',
+    // Paid for a purchase, received for a sale
+    colAmount: 'المبلغ',
+    sideBuy: 'شراء',
+    sideSell: 'بيع',
     loadFailed: 'تعذّر تحميل السجل.',
     empty: 'لا توجد عمليات بعد.',
     permanent: 'سجل العمليات دائم ولا يُحذف.',
@@ -534,6 +747,7 @@ export const ar = {
     appearance: 'المظهر',
     light: 'نهاري',
     dark: 'ليلي',
+    language: 'اللغة',
     about: 'حول صِلة',
     ownershipNote:
       'التوقيع الرقمي لرصيدك إثبات تقني داخل صِلة يحميه من التلاعب، وليس بديلاً عن تسجيل ملكية حكومي رسمي.',
@@ -638,6 +852,23 @@ export const ar = {
       trendValue: 'صاعد',
       reportTitle: 'تقرير أداء المحفظة',
     },
+    waitlist: {
+      title: 'العقارات والنفط قريباً على صِلة',
+      body: 'نفس الشفافية ونفس الأسعار الواضحة، لأصول جديدة. سجّل اهتمامك ونبلغك أول ما تتوفر.',
+      assetLabel: 'يهمني',
+      submit: 'سجّل اهتمامك',
+      failed: 'تعذّر التسجيل، حاول مرة ثانية.',
+      // Fallback only: the server's reply is shown
+      done: 'تم تسجيل اهتمامك، راح نبلغك أول ما يتوفر على صِلة.',
+      again: 'سجّل اهتمامك بأصل آخر',
+    },
+    // The walkthrough's example screens
+    demo: {
+      matchTitle: (karat: number) => `سبيكة ذهب عيار ${karat} · مجوهرات الكرّادة`,
+      // `grams` is formatted
+      matchReason: (grams: string, karat: number) =>
+        `يغطي ميزانيتك بالكامل: قرابة ${grams} غ من عيار ${karat}. يناسب ملفك الاستثماري.`,
+    },
     faq: {
       title: 'أسئلة شائعة',
       items: [
@@ -676,6 +907,31 @@ export const ar = {
       charts: 'الرسوم البيانية مقدّمة من TradingView.',
     },
   },
+  // By error code: shown when the server sent no message. In English these replace the
+  // server's Arabic message (D45)
+  errors: {
+    VALIDATION_ERROR: 'تحقق من القيم وحاول مجدداً.',
+    UNAUTHORIZED: 'سجّل الدخول للمتابعة.',
+    INVALID_CREDENTIALS: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+    FORBIDDEN: 'ليس لديك صلاحية لتنفيذ هذا الإجراء.',
+    KYC_NOT_VERIFIED: 'وثّق هويتك لإتمام العملية.',
+    SUBSCRIPTION_REQUIRED: 'هذه الميزة متاحة لمشتركي Premium.',
+    INTEGRITY_CHECK_FAILED: 'تعذّر التحقق من رصيدك.',
+    NOT_FOUND: 'العنصر المطلوب غير موجود.',
+    EMAIL_ALREADY_EXISTS: 'هذا البريد مسجّل مسبقاً.',
+    LISTING_NOT_ACTIVE: 'هذا العرض غير متاح حالياً.',
+    INSUFFICIENT_AVAILABLE_WEIGHT: 'الكمية المطلوبة أكبر من المتاح.',
+    PRICE_CHANGED: 'تغيّر السعر. راجع الأرقام الجديدة.',
+    INVALID_STATUS_TRANSITION: 'لا يمكن تغيير الحالة بهذا الشكل.',
+    PAYMENT_FAILED: 'تعذّر الدفع.',
+    RATE_LIMITED: 'محاولات كثيرة. حاول بعد قليل.',
+    AI_UNAVAILABLE: 'التحليل الذكي غير متاح حالياً.',
+    PRICE_UNAVAILABLE: 'الأسعار غير متاحة حالياً.',
+    INTERNAL_ERROR: 'حدث خطأ غير متوقع. حاول مجدداً.',
+    ACCOUNT_DISABLED: 'هذا الحساب موقوف. تواصل مع إدارة صِلة.',
+    INSUFFICIENT_HOLDINGS: 'الكمية أكبر من رصيدك المتاح للبيع.',
+    NETWORK_ERROR: 'تعذّر الاتصال بالخادم. تحقق من اتصالك وحاول مجدداً.',
+  } as Record<string, string>,
   session: {
     expiredTitle: 'انتهت الجلسة',
     expiredBody: 'سجّل الدخول للمتابعة من حيث توقفت.',
@@ -729,4 +985,15 @@ export const ar = {
   },
 } as const;
 
-export type Messages = typeof ar;
+// The shape every locale fills: the same keys and function signatures, any wording
+type Widen<T> = T extends string
+  ? string
+  : T extends (...args: infer A) => infer R
+    ? (...args: A) => Widen<R>
+    : T extends readonly (infer U)[]
+      ? readonly Widen<U>[]
+      : T extends object
+        ? { readonly [K in keyof T]: Widen<T[K]> }
+        : T;
+
+export type Messages = Widen<typeof ar>;
