@@ -18,7 +18,7 @@ import { AiThinking } from '@/components/fin/AiThinking';
 import { MatchResultCard } from '@/components/fin/MatchResultCard';
 import { useAppContext } from '@/features/shell/appContext';
 import { AdvisorFigures, AnswerText } from './AdvisorAnswer';
-import { api, errorMessage, hasErrorCode, isApiError } from '@/lib/api';
+import { api, errorMessage, hasErrorCode, isApiError, serverText } from '@/lib/api';
 import { useNow } from '@/lib/hooks';
 import { useOwnership } from '@/lib/queries';
 import { fmtAmountWords, fmtIQD } from '@/lib/formatters';
@@ -205,7 +205,7 @@ const Exchange: React.FC<{
         {/* The server's disclaimer, under every answer */}
         <p className="m-0 flex items-start gap-2 text-sm text-fg-subtle">
           <InfoIcon size={16} className="shrink-0 mt-1" aria-hidden="true" />
-          {answer.disclaimer}
+          {serverText(answer.disclaimer, s.disclaimer)}
         </p>
       </div>
     );

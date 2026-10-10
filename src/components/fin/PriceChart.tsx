@@ -7,6 +7,7 @@ import { createChart, AreaSeries, ColorType, LineStyle, IChartApi, ISeriesApi, U
 import { useThemeStore } from '@/app/theme';
 import { useInViewOnce } from '@/lib/hooks';
 import { fmtDateTime, fmtIQD } from '@/lib/formatters';
+import { useLocale } from '@/lib/direction';
 import { useT } from '@/i18n';
 
 export interface PricePoint {
@@ -44,6 +45,7 @@ export const PriceChart: React.FC<PriceChartProps> = ({
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
   const theme = useThemeStore((s) => s.theme);
+  const locale = useLocale();
   // Built when it first comes near the screen: creating a chart is the costliest single step of a
   // page load (~350ms on a mid-range phone), and below the fold it can wait (D35)
   const near = useInViewOnce(containerRef, { rootMargin: '300px 0px' });
@@ -78,8 +80,12 @@ export const PriceChart: React.FC<PriceChartProps> = ({
         vertLine: { color: crosshair, width: 1, style: LineStyle.Dashed, labelBackgroundColor: crosshair },
         horzLine: { color: crosshair, width: 1, style: LineStyle.Dashed, labelBackgroundColor: crosshair },
       },
-      // Arabic dates on the crosshair label, Western digits (06-style §7)
-      localization: { priceFormatter: formatValue, timeFormatter: (time: number) => fmtDateTime(time * 1000) },
+      // Dates in the interface language, Western digits on the axis and the crosshair (06-style §7)
+      localization: {
+        locale: locale === 'ar' ? 'ar-IQ-u-nu-latn' : 'en-GB',
+        priceFormatter: formatValue,
+        timeFormatter: (time: number) => fmtDateTime(time * 1000),
+      },
       handleScale: false,
       handleScroll: false,
     });
@@ -102,14 +108,14 @@ export const PriceChart: React.FC<PriceChartProps> = ({
       seriesRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [height, theme, compact, near]);
+  }, [height, theme, compact, near, locale]);
 
   useEffect(() => {
     if (!seriesRef.current || !chartRef.current) return;
     const sorted = [...data].sort((a, b) => a.time - b.time);
     seriesRef.current.setData(sorted.map((p) => ({ time: p.time as UTCTimestamp, value: p.value })));
     chartRef.current.timeScale().fitContent();
-  }, [data, theme, near]);
+  }, [data, theme, near, locale]);
 
   return (
     <figure className={`relative w-full m-0 ${height ? '' : 'h-full'} ${className}`} dir="ltr">

@@ -7,7 +7,7 @@ import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 import { CheckCircleIcon, WarningOctagonIcon, InfoIcon, XIcon } from '@phosphor-icons/react';
 import { duration, ease } from '@/motion/tokens';
-import { t as messages } from '@/i18n';
+import { useT } from '@/i18n';
 import { useToastStore, ToastItem, ToastType } from './toastStore';
 
 const AUTO_DISMISS_MS = 5000;
@@ -20,6 +20,7 @@ const icons: Record<ToastType, React.ReactNode> = {
 
 const ToastCard: React.FC<{ toast: ToastItem }> = ({ toast: item }) => {
   const removeToast = useToastStore((s) => s.removeToast);
+  const t = useT();
   const onClose = () => removeToast(item.id);
 
   // Timer depends on the toast only, so other toasts arriving never restart it
@@ -50,7 +51,7 @@ const ToastCard: React.FC<{ toast: ToastItem }> = ({ toast: item }) => {
       <button
         type="button"
         onClick={onClose}
-        aria-label={messages.common.close}
+        aria-label={t.common.close}
         className="shrink-0 size-11 -m-3 inline-flex items-center justify-center rounded-sm text-fg-subtle hover:text-fg outline-none focus-visible:ring-3 focus-visible:ring-line-focus/35"
       >
         <XIcon size={16} />

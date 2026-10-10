@@ -14,7 +14,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { AiThinking } from '@/components/fin/AiThinking';
 import { MatchResultCard } from '@/components/fin/MatchResultCard';
 import { useAppContext } from '@/features/shell/appContext';
-import { api, errorMessage } from '@/lib/api';
+import { api, errorMessage, serverText } from '@/lib/api';
 import { markOnboardingStep } from '@/lib/onboarding';
 import { fmtAmountWords, fmtIQD } from '@/lib/formatters';
 import { useT } from '@/i18n';
@@ -98,7 +98,7 @@ export const SmartMatchPage: React.FC = () => {
     if (data.results.length === 0) {
       return (
         <Card padding="spacious" className="gap-4">
-          <p className="m-0 text-h4 font-semibold text-fg">{data.message || s.noResults}</p>
+          <p className="m-0 text-h4 font-semibold text-fg">{serverText(data.message, s.noResults)}</p>
           <div className="flex flex-wrap gap-3">
             <Button variant="secondary" size="md" onClick={() => match.reset()}>
               {s.editBudget}
@@ -115,7 +115,9 @@ export const SmartMatchPage: React.FC = () => {
       <div className="flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-h4 font-semibold text-fg m-0">{data.message}</h2>
+            <h2 className="text-h4 font-semibold text-fg m-0">
+              {serverText(data.message, s.found(data.results.length))}
+            </h2>
             <p className="m-0 text-sm text-fg-subtle">
               {s.budgetLine} <bdi className="num">{fmtIQD(data.budget_iqd)}</bdi> {t.units.iqd}
             </p>

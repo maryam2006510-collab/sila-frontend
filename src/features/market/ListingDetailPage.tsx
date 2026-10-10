@@ -20,7 +20,7 @@ import { livePriceFor } from '@/lib/pricing';
 import { fmtNumber } from '@/lib/formatters';
 import { useMirrored } from '@/lib/direction';
 import { useNow } from '@/lib/hooks';
-import { isPromotedAt } from '@/lib/status';
+import { isPromotedAt, sellerLabel } from '@/lib/status';
 import { useT } from '@/i18n';
 import { ListingLoadError } from './ListingLoadError';
 
@@ -91,7 +91,8 @@ export const ListingDetailPage: React.FC = () => {
                   aria-label={t.shell.verified}
                 />
               )}
-              {t.listing.seller} <span className="font-medium text-fg">{listing.seller_name}</span>
+              {t.listing.seller}{' '}
+              <span className="font-medium text-fg">{sellerLabel(listing, t.resale.sellerLabel)}</span>
             </p>
 
             <dl className="m-0 grid grid-cols-2 md:grid-cols-3 gap-5 pt-5 border-t border-line-subtle">

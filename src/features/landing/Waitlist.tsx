@@ -12,13 +12,14 @@ import { CheckCircleIcon } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Segmented } from '@/components/ui/Segmented';
-import { api, errorMessage } from '@/lib/api';
+import { api, errorMessage, serverText } from '@/lib/api';
 import { noOrphan } from '@/lib/noOrphan';
 import type { InterestAssetClass } from '@/lib/types';
-import { t as messages, useT } from '@/i18n';
+import { useT, Messages } from '@/i18n';
 
-const schema = z.object({ email: z.string().trim().email(messages.auth.validation.emailInvalid) });
-type Values = z.infer<typeof schema>;
+// Built on every render from the current language's messages
+const schemaFor = (v: Messages['auth']['validation']) => z.object({ email: z.string().trim().email(v.emailInvalid) });
+type Values = z.infer<ReturnType<typeof schemaFor>>;
 
 export const Waitlist: React.FC = () => {
   const t = useT();
@@ -31,7 +32,7 @@ export const Waitlist: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Values>({ resolver: zodResolver(schema) });
+  } = useForm<Values>({ resolver: zodResolver(schemaFor(t.auth.validation)) });
 
   return (
     <section
@@ -54,7 +55,7 @@ export const Waitlist: React.FC = () => {
             <>
               <p role="status" className="m-0 text-body text-fg flex items-start gap-3">
                 <CheckCircleIcon size={20} weight="fill" className="shrink-0 mt-1 text-success-fg" aria-hidden="true" />
-                {send.data}
+                {serverText(send.data, w.done)}
               </p>
               <Button variant="secondary" size="md" className="self-start" onClick={() => send.reset()}>
                 {w.again}

@@ -3,6 +3,7 @@
 
 import { API_BASE_URL, USE_MOCK } from './config';
 import { ApiError, toApiError } from './errors';
+import { messagesNow } from '@/i18n';
 import { tokens } from './tokens';
 import { useSessionStore } from '../session';
 import type { TokenOut } from './wire';
@@ -23,7 +24,7 @@ export interface TransportResponse {
 
 export type Transport = (req: TransportRequest) => Promise<TransportResponse>;
 
-const networkError = () => new ApiError(0, 'NETWORK_ERROR', 'تعذّر الاتصال بالخادم.');
+const networkError = () => new ApiError(0, 'NETWORK_ERROR', messagesNow().errors.NETWORK_ERROR);
 
 const fetchTransport: Transport = async ({ method, path, headers, body }) => {
   let res: Response;

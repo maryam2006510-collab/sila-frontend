@@ -14,7 +14,7 @@ import { Dialog } from '@/components/ui/Dialog';
 import { Num } from '@/components/ui/Num';
 import { toast } from '@/components/ui/toastStore';
 import { useAppContext } from '@/features/shell/appContext';
-import { api, isApiError } from '@/lib/api';
+import { api, errorMessage } from '@/lib/api';
 import { queryKeys } from '@/lib/queries';
 import { useServerConfig } from '@/lib/queries';
 import { isolateFigures } from '@/lib/bidi';
@@ -67,7 +67,7 @@ export const PremiumPage: React.FC = () => {
       navigate('/app/insights');
     } catch (err) {
       // Mock payment failed: the plan stays unchanged (workflow 07)
-      setError(isApiError(err) && err.message ? err.message : p.subscribeFailed);
+      setError(errorMessage(err, p.subscribeFailed));
     } finally {
       setBusy(false);
     }

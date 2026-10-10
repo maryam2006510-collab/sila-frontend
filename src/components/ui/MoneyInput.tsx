@@ -6,6 +6,7 @@ import React, { useId, useState } from 'react';
 import { FieldMessage } from './Input';
 import { fieldStateClasses } from './fieldStyles';
 import { fmtNumber } from '@/lib/formatters';
+import { useT } from '@/i18n';
 import { useDirection } from '@/lib/direction';
 
 interface MoneyInputProps {
@@ -43,7 +44,7 @@ export const MoneyInput: React.FC<MoneyInputProps> = ({
   label,
   value,
   onChangeValue,
-  unit = 'د.ع',
+  unit: unitProp,
   placeholder = '0',
   error,
   helperText,
@@ -53,6 +54,8 @@ export const MoneyInput: React.FC<MoneyInputProps> = ({
   className = '',
 }) => {
   const id = useId();
+  const t = useT();
+  const unit = unitProp ?? t.units.iqd;
   const isRtl = useDirection() === 'rtl';
   const [raw, setRaw] = useState(() => toRaw(value));
   const [syncedValue, setSyncedValue] = useState(value);

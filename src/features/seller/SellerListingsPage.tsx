@@ -14,7 +14,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { Num } from '@/components/ui/Num';
 import { toast } from '@/components/ui/toastStore';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { api, isApiError } from '@/lib/api';
+import { api, errorMessage } from '@/lib/api';
 import { useMyListings } from '@/lib/queries';
 import { useServerConfig } from '@/lib/queries';
 import { isolateFigures } from '@/lib/bidi';
@@ -44,7 +44,7 @@ export const SellerListingsPage: React.FC = () => {
   const [dialogError, setDialogError] = useState('');
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['listings'] });
-  const errorText = (err: unknown, fallback: string) => (isApiError(err) && err.message ? err.message : fallback);
+  const errorText = errorMessage;
 
   const setStatus = async (listing: AssetListing, status: 'active' | 'suspended') => {
     setBusy(true);

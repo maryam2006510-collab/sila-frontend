@@ -39,6 +39,7 @@ import type {
   ResetRequestStatus,
   UserRole,
 } from '@/lib/types';
+import { sellerLabel } from '@/lib/status';
 import { useT } from '@/i18n';
 
 // ---------------------------------------------------------------------------
@@ -351,7 +352,7 @@ const ListingRow: React.FC<{ listing: AssetListing }> = ({ listing }) => {
       <div className="flex items-center gap-3 min-w-0">
         <Chip karat={listing.karat} />
         <div className="flex flex-col gap-1 min-w-0">
-          <p className="m-0 text-body font-semibold text-fg truncate">{listing.seller_name}</p>
+          <p className="m-0 text-body font-semibold text-fg truncate">{sellerLabel(listing, t.resale.sellerLabel)}</p>
           <p className="m-0 text-sm text-fg-subtle">
             {a.remaining(fmtGrams(listing.available_weight_grams), fmtGrams(listing.total_weight_grams))}
           </p>

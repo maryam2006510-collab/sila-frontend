@@ -11,12 +11,13 @@ import { useMutation } from '@tanstack/react-query';
 import { CheckCircleIcon } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { api, errorMessage } from '@/lib/api';
-import { t as messages, useT } from '@/i18n';
+import { api, errorMessage, serverText } from '@/lib/api';
+import { useT, Messages } from '@/i18n';
 import { AuthShell } from './AuthShell';
 
-const schema = z.object({ email: z.string().trim().email(messages.auth.validation.emailInvalid) });
-type Values = z.infer<typeof schema>;
+// Built on every render from the current language's messages
+const schemaFor = (v: Messages['auth']['validation']) => z.object({ email: z.string().trim().email(v.emailInvalid) });
+type Values = z.infer<ReturnType<typeof schemaFor>>;
 
 export const ForgotPasswordPage: React.FC = () => {
   const t = useT();
@@ -26,7 +27,7 @@ export const ForgotPasswordPage: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Values>({ resolver: zodResolver(schema) });
+  } = useForm<Values>({ resolver: zodResolver(schemaFor(t.auth.validation)) });
 
   return (
     <AuthShell>
@@ -39,7 +40,7 @@ export const ForgotPasswordPage: React.FC = () => {
             className="m-0 p-4 rounded-sm bg-success-bg border border-success-line text-body text-fg flex items-start gap-3"
           >
             <CheckCircleIcon size={20} weight="fill" className="shrink-0 mt-1 text-success-fg" aria-hidden="true" />
-            {send.data}
+            {serverText(send.data, s.forgotDone)}
           </p>
         ) : (
           <form onSubmit={handleSubmit((v) => send.mutate(v.email))} noValidate className="flex flex-col gap-5">

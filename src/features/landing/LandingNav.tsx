@@ -13,6 +13,7 @@ import { Logo } from '@/components/ui/Logo';
 import { ButtonLink } from '@/components/ui/Button';
 import { useSessionStore } from '@/lib/session';
 import { radius, spring, transition } from '@/motion/tokens';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useT } from '@/i18n';
 
 const SECTION_IDS = ['how', 'pricing', 'security', 'sellers', 'faq'] as const;
@@ -238,6 +239,7 @@ export const LandingNav: React.FC<{ ready: boolean }> = ({ ready }) => {
               transition={spring.calm}
               className="flex items-center gap-1.5"
             >
+              <LanguageToggle className="h-11 lg:h-10 px-3 text-fg-muted hover:text-fg hover:bg-state-hover" />
               <button
                 type="button"
                 onClick={toggleTheme}

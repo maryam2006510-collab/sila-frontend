@@ -15,7 +15,7 @@ import { toast } from '@/components/ui/toastStore';
 import { ListingCard } from '@/components/fin/ListingCard';
 import { useAppContext } from '@/features/shell/appContext';
 import { openKyc } from '@/features/kyc/kycStore';
-import { api, hasErrorCode, isApiError } from '@/lib/api';
+import { api, errorMessage, hasErrorCode } from '@/lib/api';
 import { KARATS, livePriceFor } from '@/lib/pricing';
 import { isolateFigures } from '@/lib/bidi';
 import { Karat, AssetListing } from '@/lib/types';
@@ -85,7 +85,7 @@ export const NewListingPage: React.FC = () => {
           onVerified: publish,
         });
       } else {
-        setError(isApiError(err) && err.message ? err.message : n.publishFailed);
+        setError(errorMessage(err, n.publishFailed));
       }
     } finally {
       setPublishing(false);

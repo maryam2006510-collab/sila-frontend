@@ -13,7 +13,7 @@ import { ChangePasswordForm } from '@/features/auth/ChangePasswordForm';
 import { openKyc } from '@/features/kyc/kycStore';
 import { signOut } from '@/features/auth/session';
 import { useThemeStore, Theme } from '@/app/theme';
-import { useMirrored } from '@/lib/direction';
+import { useMirrored, useLocaleStore, Locale } from '@/lib/direction';
 import { fmtDate } from '@/lib/formatters';
 import { isPremiumActive, premiumExpiry } from '@/lib/status';
 import { useT } from '@/i18n';
@@ -32,6 +32,8 @@ export const SettingsPage: React.FC = () => {
   const mirrored = useMirrored();
   const { user } = useAppContext();
   const { theme, setTheme } = useThemeStore();
+  const locale = useLocaleStore((st) => st.locale);
+  const setLocale = useLocaleStore((st) => st.setLocale);
   const isInvestor = user.role === 'investor';
 
   const expiry = premiumExpiry(user);
@@ -91,6 +93,18 @@ export const SettingsPage: React.FC = () => {
           onChange={setTheme}
           name="settings-theme"
           ariaLabel={s.appearance}
+        />
+        <h3 className="text-body font-semibold text-fg m-0 mt-2">{s.language}</h3>
+        {/* Each language named in itself */}
+        <Segmented<Locale>
+          options={[
+            { value: 'ar', label: 'العربية' },
+            { value: 'en', label: 'English' },
+          ]}
+          value={locale}
+          onChange={setLocale}
+          name="settings-language"
+          ariaLabel={s.language}
         />
       </Card>
 

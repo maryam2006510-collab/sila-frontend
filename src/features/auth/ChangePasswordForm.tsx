@@ -11,19 +11,20 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { toast } from '@/components/ui/toastStore';
 import { errorMessage } from '@/lib/api';
-import { t as messages, useT } from '@/i18n';
+import { useT, Messages } from '@/i18n';
 import { AuthShell } from './AuthShell';
 import { useChangePassword } from './session';
 
-const p = messages.password;
-const schema = z
-  .object({
-    current: z.string().min(1, p.required),
-    next: z.string().min(8, p.tooShort).max(72),
-    confirm: z.string().min(1, p.required),
-  })
-  .refine((v) => v.next === v.confirm, { message: p.mismatch, path: ['confirm'] });
-type Values = z.infer<typeof schema>;
+// Built on every render from the current language's messages
+const schemaFor = (p: Messages['password']) =>
+  z
+    .object({
+      current: z.string().min(1, p.required),
+      next: z.string().min(8, p.tooShort).max(72),
+      confirm: z.string().min(1, p.required),
+    })
+    .refine((v) => v.next === v.confirm, { message: p.mismatch, path: ['confirm'] });
+type Values = z.infer<ReturnType<typeof schemaFor>>;
 
 export const ChangePasswordForm: React.FC<{ temporary?: boolean }> = ({ temporary = false }) => {
   const t = useT();
@@ -34,7 +35,7 @@ export const ChangePasswordForm: React.FC<{ temporary?: boolean }> = ({ temporar
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<Values>({ resolver: zodResolver(schema) });
+  } = useForm<Values>({ resolver: zodResolver(schemaFor(s)) });
 
   const submit = (v: Values) =>
     change.mutate(

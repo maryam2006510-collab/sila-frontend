@@ -7,7 +7,8 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BellIcon } from '@phosphor-icons/react';
-import { api } from '@/lib/api';
+import { api, serverText } from '@/lib/api';
+import { useLocale } from '@/lib/direction';
 import { queryKeys, useNotifications } from '@/lib/queries';
 import { fmtRelativeTime } from '@/lib/formatters';
 import type { AppNotification, Notifications } from '@/lib/types';
@@ -16,6 +17,7 @@ import { useT } from '@/i18n';
 export const NotificationsBell: React.FC<{ buttonClassName: string }> = ({ buttonClassName }) => {
   const t = useT();
   const s = t.notifications;
+  const locale = useLocale();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const panelId = useId();
@@ -114,9 +116,9 @@ export const NotificationsBell: React.FC<{ buttonClassName: string }> = ({ butto
                       />
                       <span className="flex-1 min-w-0 flex flex-col gap-1">
                         <span className={`text-body text-fg ${n.read ? 'font-medium' : 'font-semibold'}`}>
-                          {n.title}
+                          {serverText(n.title, s.kinds[n.kind] ?? n.title)}
                         </span>
-                        <span className="text-sm text-fg-muted">{n.body}</span>
+                        {locale === 'ar' && <span className="text-sm text-fg-muted">{n.body}</span>}
                         <span className="text-xs text-fg-subtle">{fmtRelativeTime(n.created_at)}</span>
                       </span>
                     </button>

@@ -74,7 +74,8 @@ export const LivePricePanel: React.FC<LivePricePanelProps> = ({ prices, classNam
 
       {/* Focal figure: 24K per gram (display-lg, gold) + delta chip */}
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 shrink-0">
-        <div className="flex items-baseline gap-3">
+        {/* Wraps the change chip under the price when the unit is long ("IQD / g") */}
+        <div className="flex flex-wrap items-baseline gap-x-3 min-w-0">
           <span className="text-h2 sm:text-h1 xl:text-display-lg font-bold text-fg-gold whitespace-nowrap">
             <RollingNumber value={prices.price_24k} format={fmtIQD} suffix={t.units.perGram} announce />
           </span>

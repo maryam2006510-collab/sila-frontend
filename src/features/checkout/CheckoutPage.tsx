@@ -22,7 +22,7 @@ import { gramsError } from '@/lib/validation';
 import { AiInsight } from '@/components/fin/AiInsight';
 import { useAppContext } from '@/features/shell/appContext';
 import { openKyc } from '@/features/kyc/kycStore';
-import { api, hasErrorCode, isApiError } from '@/lib/api';
+import { api, errorMessage, hasErrorCode } from '@/lib/api';
 import { useListing, queryKeys } from '@/lib/queries';
 import { livePriceFor, estimateOrder } from '@/lib/pricing';
 import { useServerConfig } from '@/lib/queries';
@@ -32,6 +32,7 @@ import { isolateFigures } from '@/lib/bidi';
 import { fmtNumber } from '@/lib/formatters';
 import { useMirrored } from '@/lib/direction';
 import { TransactionPreview, ConfirmResult, TransactionPreviewRequest } from '@/lib/types';
+import { sellerLabel } from '@/lib/status';
 import { useT } from '@/i18n';
 import { ListingLoadError } from '@/features/market/ListingLoadError';
 
@@ -140,7 +141,7 @@ export const CheckoutPage: React.FC = () => {
         setIssue({ kind: 'notActive' });
         setStep('review');
       } else {
-        setPreviewError(isApiError(err) && err.message ? err.message : c.previewFailed);
+        setPreviewError(errorMessage(err, c.previewFailed));
         queryClient.invalidateQueries({ queryKey: queryKeys.listing(listing.id) });
       }
     } finally {
@@ -180,7 +181,7 @@ export const CheckoutPage: React.FC = () => {
         setIssue({ kind: 'priceChanged' });
         await requestPreview(true);
       } else if (hasErrorCode(err, 'INSUFFICIENT_AVAILABLE_WEIGHT')) {
-        setIssue({ kind: 'insufficient', message: isApiError(err) ? err.message : '' });
+        setIssue({ kind: 'insufficient', message: errorMessage(err, '') });
         queryClient.invalidateQueries({ queryKey: queryKeys.listing(listing.id) });
       } else if (hasErrorCode(err, 'LISTING_NOT_ACTIVE')) {
         setIssue({ kind: 'notActive' });
@@ -189,7 +190,7 @@ export const CheckoutPage: React.FC = () => {
         // went through (200), so retrying can never buy twice (contract §5)
         setIssue({ kind: 'network' });
       } else {
-        setIssue({ kind: 'generic', message: isApiError(err) && err.message ? err.message : c.confirmFailed });
+        setIssue({ kind: 'generic', message: errorMessage(err, c.confirmFailed) });
       }
     } finally {
       setConfirming(false);
@@ -289,7 +290,7 @@ export const CheckoutPage: React.FC = () => {
           <Card padding="normal" className="gap-3">
             <div className="flex items-center gap-2">
               <Chip karat={listing.karat} />
-              <span className="text-sm text-fg-muted truncate">{listing.seller_name}</span>
+              <span className="text-sm text-fg-muted truncate">{sellerLabel(listing, t.resale.sellerLabel)}</span>
             </div>
             <h1 className="text-h4 font-semibold text-fg m-0">{t.listing.title(listing.karat)}</h1>
             <p className="m-0 text-body text-fg-muted">

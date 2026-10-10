@@ -58,6 +58,7 @@ export const ar = {
       // Short forms for the mobile tab bar
       home: 'الرئيسية',
       matchShort: 'المطابقة',
+      portfolioShort: 'محفظتي',
       addShort: 'إضافة',
       salesShort: 'المبيعات',
     },
@@ -82,6 +83,9 @@ export const ar = {
     kycPendingSeller: 'التوثيق: سيُطلب عند نشر أول عرض',
     themeToLight: 'الوضع النهاري',
     themeToDark: 'الوضع الليلي',
+    // The other language, written in that language, and the button's full name
+    otherLanguage: 'English',
+    switchLanguage: 'التبديل إلى الإنكليزية',
     notifications: 'الإشعارات',
     newBadge: 'جديد',
     placeholder: 'هذه الشاشة قيد البناء.',
@@ -307,6 +311,8 @@ export const ar = {
     browseMarket: 'تصفح السوق',
     // Fallback only: the server's `message` explains an empty result
     noResults: 'لا توجد عروض تناسب هذه الميزانية حالياً.',
+    // Fallback only: the server's `message` heads the results
+    found: (n: number) => `وجدنا ${n} عروض تناسب ميزانيتك`,
     budgetLine: 'ميزانيتك:',
     editBudget: 'تعديل الميزانية',
     bestMatch: 'الأنسب لك',
@@ -359,6 +365,8 @@ export const ar = {
       withdrawn: 'مسحوب',
     },
     badge: 'إعادة بيع من مستثمر',
+    // Shown as the seller of a resale offer (the server sends the same words)
+    sellerLabel: 'مستثمر على صِلة',
     ownListing: 'هذا عرض إعادة البيع مالتك، فما تكدر تشتري منه.',
   },
   admin: {
@@ -453,6 +461,8 @@ export const ar = {
     forgotIntro: 'اكتب بريدك الإلكتروني، وإدارة صِلة تتواصل وياك بكلمة مرور مؤقتة.',
     forgotSubmit: 'أرسل الطلب',
     forgotFailed: 'تعذّر إرسال الطلب، حاول مرة ثانية.',
+    // Fallback only: the server's reply is shown
+    forgotDone: 'إذا البريد الإلكتروني مسجل عدنا، طلبك وصل لإدارة صِلة، وراح يتواصلون وياك بكلمة مرور مؤقتة.',
     backToLogin: 'رجوع لتسجيل الدخول',
     changeTitle: 'تغيير كلمة المرور',
     changeIntro: 'بعد التغيير، الأجهزة الثانية تحتاج دخول من جديد.',
@@ -497,6 +507,16 @@ export const ar = {
     markAll: 'تحديد الكل كمقروء',
     empty: 'ما عندك إشعارات بعد.',
     failed: 'تعذّر تحميل الإشعارات.',
+    // Fallback titles by kind: Arabic shows the server's own title and text
+    kinds: {
+      purchase_completed: 'تمت عملية الشراء',
+      resale_sold: 'انباع جزء من عرضك',
+      listing_sold: 'عملية بيع جديدة',
+      listing_suspended: 'تم إيقاف عرضك',
+      password_reset: 'كلمة مرور جديدة',
+      password_reset_request: 'طلب استرجاع كلمة مرور',
+      price_alert: 'وصل تنبيه السعر',
+    } as Record<string, string>,
   },
   advisor: {
     title: 'المستشار الذكي',
@@ -555,6 +575,8 @@ export const ar = {
     retry: 'إعادة المحاولة',
     entryTitle: 'اسأل المستشار الذكي',
     entryBody: 'سؤال بسيط بالعربي، وجواب بأسعار اليوم وعروض تكدر تشتريها.',
+    // Fallback only: the server's disclaimer is shown under every answer
+    disclaimer: 'هذي المعلومات استرشادية وليست نصيحة مالية. قرار الشراء يرجعلك.',
   },
   checkout: {
     stepQuantity: 'الكمية',
@@ -725,6 +747,7 @@ export const ar = {
     appearance: 'المظهر',
     light: 'نهاري',
     dark: 'ليلي',
+    language: 'اللغة',
     about: 'حول صِلة',
     ownershipNote:
       'التوقيع الرقمي لرصيدك إثبات تقني داخل صِلة يحميه من التلاعب، وليس بديلاً عن تسجيل ملكية حكومي رسمي.',
@@ -835,7 +858,16 @@ export const ar = {
       assetLabel: 'يهمني',
       submit: 'سجّل اهتمامك',
       failed: 'تعذّر التسجيل، حاول مرة ثانية.',
+      // Fallback only: the server's reply is shown
+      done: 'تم تسجيل اهتمامك، راح نبلغك أول ما يتوفر على صِلة.',
       again: 'سجّل اهتمامك بأصل آخر',
+    },
+    // The walkthrough's example screens
+    demo: {
+      matchTitle: (karat: number) => `سبيكة ذهب عيار ${karat} · مجوهرات الكرّادة`,
+      // `grams` is formatted
+      matchReason: (grams: string, karat: number) =>
+        `يغطي ميزانيتك بالكامل: قرابة ${grams} غ من عيار ${karat}. يناسب ملفك الاستثماري.`,
     },
     faq: {
       title: 'أسئلة شائعة',
@@ -875,6 +907,31 @@ export const ar = {
       charts: 'الرسوم البيانية مقدّمة من TradingView.',
     },
   },
+  // By error code: shown when the server sent no message. In English these replace the
+  // server's Arabic message (D45)
+  errors: {
+    VALIDATION_ERROR: 'تحقق من القيم وحاول مجدداً.',
+    UNAUTHORIZED: 'سجّل الدخول للمتابعة.',
+    INVALID_CREDENTIALS: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+    FORBIDDEN: 'ليس لديك صلاحية لتنفيذ هذا الإجراء.',
+    KYC_NOT_VERIFIED: 'وثّق هويتك لإتمام العملية.',
+    SUBSCRIPTION_REQUIRED: 'هذه الميزة متاحة لمشتركي Premium.',
+    INTEGRITY_CHECK_FAILED: 'تعذّر التحقق من رصيدك.',
+    NOT_FOUND: 'العنصر المطلوب غير موجود.',
+    EMAIL_ALREADY_EXISTS: 'هذا البريد مسجّل مسبقاً.',
+    LISTING_NOT_ACTIVE: 'هذا العرض غير متاح حالياً.',
+    INSUFFICIENT_AVAILABLE_WEIGHT: 'الكمية المطلوبة أكبر من المتاح.',
+    PRICE_CHANGED: 'تغيّر السعر. راجع الأرقام الجديدة.',
+    INVALID_STATUS_TRANSITION: 'لا يمكن تغيير الحالة بهذا الشكل.',
+    PAYMENT_FAILED: 'تعذّر الدفع.',
+    RATE_LIMITED: 'محاولات كثيرة. حاول بعد قليل.',
+    AI_UNAVAILABLE: 'التحليل الذكي غير متاح حالياً.',
+    PRICE_UNAVAILABLE: 'الأسعار غير متاحة حالياً.',
+    INTERNAL_ERROR: 'حدث خطأ غير متوقع. حاول مجدداً.',
+    ACCOUNT_DISABLED: 'هذا الحساب موقوف. تواصل مع إدارة صِلة.',
+    INSUFFICIENT_HOLDINGS: 'الكمية أكبر من رصيدك المتاح للبيع.',
+    NETWORK_ERROR: 'تعذّر الاتصال بالخادم. تحقق من اتصالك وحاول مجدداً.',
+  } as Record<string, string>,
   session: {
     expiredTitle: 'انتهت الجلسة',
     expiredBody: 'سجّل الدخول للمتابعة من حيث توقفت.',
@@ -928,4 +985,15 @@ export const ar = {
   },
 } as const;
 
-export type Messages = typeof ar;
+// The shape every locale fills: the same keys and function signatures, any wording
+type Widen<T> = T extends string
+  ? string
+  : T extends (...args: infer A) => infer R
+    ? (...args: A) => Widen<R>
+    : T extends readonly (infer U)[]
+      ? readonly Widen<U>[]
+      : T extends object
+        ? { readonly [K in keyof T]: Widen<T[K]> }
+        : T;
+
+export type Messages = Widen<typeof ar>;

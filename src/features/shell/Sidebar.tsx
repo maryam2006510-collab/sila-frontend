@@ -73,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onSwitchRole }
       </div>
 
       <nav className="flex-1 py-4 px-3 flex flex-col gap-1 overflow-y-auto" aria-label={t.shell.nav.dashboard}>
-        {sidebarItems(user.role).map((item) => {
+        {sidebarItems(user.role, t.shell.nav).map((item) => {
           const link = (
             <NavLink
               key={item.to}

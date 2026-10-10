@@ -22,3 +22,10 @@ export const promotionDaysLeft = (listing: AssetListing, now: number): number | 
   if (!isPromotedAt(listing, now)) return null;
   return Math.ceil((new Date(listing.promotion_expiry_date!).getTime() - now) / DAY_MS);
 };
+
+// The seller line of a listing: a resale offer never names the investor (Workflow 09), and its
+// label is shown in the interface language rather than the server's Arabic
+export const sellerLabel = (
+  listing: Pick<AssetListing, 'listing_type' | 'seller_name'>,
+  resaleLabel: string
+): string => (listing.listing_type === 'investor_resale' ? resaleLabel : listing.seller_name);

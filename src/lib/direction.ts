@@ -6,8 +6,8 @@ import { create } from 'zustand';
 export type Locale = 'ar' | 'en';
 export type Direction = 'rtl' | 'ltr';
 
-// English is structurally supported but not shipped yet (PLAN.md §0)
-export const SUPPORTED_LOCALES: readonly Locale[] = ['ar'];
+// Arabic first (RTL), English second (LTR): D45
+export const SUPPORTED_LOCALES: readonly Locale[] = ['ar', 'en'];
 export const isMultiLocale = SUPPORTED_LOCALES.length > 1;
 
 const directionOf = (locale: Locale): Direction => (locale === 'ar' ? 'rtl' : 'ltr');

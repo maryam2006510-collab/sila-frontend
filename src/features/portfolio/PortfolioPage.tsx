@@ -18,7 +18,7 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { TransactionsTable } from '@/features/transactions/TransactionsTable';
 import { ResaleSection } from './ResaleSection';
 import { useAppContext } from '@/features/shell/appContext';
-import { hasErrorCode } from '@/lib/api';
+import { hasErrorCode, serverText } from '@/lib/api';
 import { useOwnership, useTransactions } from '@/lib/queries';
 import { holdingsByKarat, holdingsValue, signedGrams } from '@/lib/pricing';
 import { fmtDate, fmtGrams, fmtPct } from '@/lib/formatters';
@@ -116,7 +116,7 @@ export const PortfolioPage: React.FC = () => {
         {ownership?.disclaimer && (
           <p className="m-0 mt-2 flex items-start gap-2 text-sm text-fg-subtle">
             <InfoIcon size={16} className="shrink-0 mt-1" aria-hidden="true" />
-            {ownership.disclaimer}
+            {serverText(ownership.disclaimer, t.settings.ownershipNote)}
           </p>
         )}
       </div>
@@ -143,7 +143,7 @@ export const PortfolioPage: React.FC = () => {
         </dl>
       ) : (
         <div className="flex flex-col items-start gap-3">
-          <p className="m-0 text-body text-fg-muted">{ownership?.message || p.empty}</p>
+          <p className="m-0 text-body text-fg-muted">{serverText(ownership?.message, p.empty)}</p>
           <Button variant="primary" size="lg" onClick={() => navigate('/app/market')}>
             {t.dashboard.kpiGramsEmpty}
           </Button>
