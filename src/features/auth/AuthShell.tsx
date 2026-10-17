@@ -20,7 +20,7 @@ export const AuthShell: React.FC<{ children: React.ReactNode }> = ({ children })
     <div className="min-h-screen bg-canvas text-fg flex flex-col md:grid md:grid-cols-golden">
       {/* Mobile header band (136) */}
       <header className="md:hidden h-g2 bg-surface-brand text-fg-on-brand flex items-center justify-between px-5">
-        <Logo variant="icon" tone="white" height={32} linkHome />
+        <Logo variant="full" tone="white" height={32} linkHome />
         <LanguageToggle className="h-11 px-3 text-fg-on-brand hover:bg-state-hover" />
       </header>
 

@@ -30,7 +30,7 @@ Read in this order, fully:
 | 9 | `UI Kit/07-motion-system.md` | GSAP / Motion / Anime.js ownership, tokens, recipes |
 | 10 | `UI Kit/08-ux-user-flows.md` | Screens, states, microcopy, landing structure |
 
-Brand assets: `SIla Logo/` (PNG) and `UI Kit/assets/sila-logo.svg`, `UI Kit/assets/sila-icon.svg` (vector, use these in code).
+Brand assets: `Sila/Brand/Sila-Logo-Kit/` (the new mark: SVG, PDF, PNG, app icons, web icons, brand guidelines). In code use `src/assets/brand/sila-logo.svg` and `sila-icon.svg`.
 
 **Conflict priority:** (1) explicit rules in this prompt → (2) UI Kit files 01 to 08 → (3) Product workflow files for behavior → (4) the skills below → (5) your own defaults.
 If two sources truly conflict, follow the higher one and leave a short note in `DECISIONS.md`.
@@ -94,7 +94,7 @@ Banned: purple/blue AI glows, neon, glassmorphism cards, blobs, random 3D, stock
 Phosphor only. `regular` = default, `fill` = active/selected (plus the status exceptions in 03). No other weights.
 
 ### 3.6 Animation
-GSAP (landing scroll storytelling), Motion (React UI state, digit roll), Anime.js (SVG draws, logo loader, small staggers). One library per element, tokens only, 60fps, transform/opacity only, full `prefers-reduced-motion` support, zero jank, zero console errors.
+GSAP (landing scroll storytelling), Motion (React UI state, digit roll), Anime.js (SVG draws, small staggers). One library per element, tokens only, 60fps, transform/opacity only, full `prefers-reduced-motion` support, zero jank, zero console errors.
 
 ### 3.7 Safety UX
 Fees before confirm, confirm label repeats the total, no auto-execution of money actions, preserved intent after KYC/login interrupts, preview freshness enforcement, every error code designed (see 08 section 3.2).

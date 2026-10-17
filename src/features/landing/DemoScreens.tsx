@@ -126,7 +126,7 @@ export const VerifyScreen: React.FC = () => {
   return (
     <div className="rounded-lg overflow-hidden border border-line bg-surface-2">
       <div className="p-5 bg-surface-brand text-fg-on-brand flex items-center gap-3">
-        <Logo variant="icon" tone="white" height={24} />
+        <Logo variant="full" tone="white" height={24} />
         <p className="m-0 text-h4 font-semibold">{k.title}</p>
       </div>
       <div className="p-5 flex flex-col items-center text-center gap-4">

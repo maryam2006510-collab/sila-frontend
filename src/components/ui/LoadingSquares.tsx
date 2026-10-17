@@ -1,6 +1,6 @@
 // src/components/ui/LoadingSquares.tsx
-// Three of the logo's squares pulsing in sequence (06-style §5.1): the one loading motif,
-// small inside buttons and larger on full-screen loads.
+// Three small rounded squares pulsing in sequence (06-style §5.1), the system's marker shape: the
+// one loading motif, small inside buttons and larger on full-screen loads.
 
 import React from 'react';
 

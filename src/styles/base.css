@@ -286,27 +286,6 @@ figcaption {
   animation-play-state: paused;
 }
 
-/* Landing brand-mark moment (05-logo §5.3): the icon built from tonal flat fills.
-   The only place logo versions 2 to 4 appear. Bars 1/3/6/7, squares 2/4/5/8. */
-.brand-mark [data-piece='1'],
-.brand-mark [data-piece='6'] {
-  fill: var(--primary-600);
-}
-
-.brand-mark [data-piece='3'],
-.brand-mark [data-piece='7'] {
-  fill: var(--secondary-500);
-}
-
-.brand-mark [data-kind='square'] {
-  fill: var(--secondary-300);
-}
-
-.brand-mark [data-piece='2'],
-.brand-mark [data-piece='8'] {
-  fill: var(--logo-on-canvas);
-}
-
 /* ----------------------------------------------------------------------------
    Pointer affordance (D30): everything a person can activate shows the hand,
    anything disabled shows not-allowed. Tailwind v4 dropped the button default,
@@ -483,7 +462,7 @@ summary::-webkit-details-marker {
   scroll-margin-top: calc(var(--nav-landing) + var(--gap-sm));
 }
 
-/* Button loading: three logo squares pulsing in sequence (06-style §5.1) */
+/* Button loading: three marker squares pulsing in sequence (06-style §5.1) */
 .loading-square {
   animation: live-square-pulse var(--dur-6) ease-in-out infinite;
 }

@@ -8,7 +8,7 @@ export const duration = {
   dur3: 210, // Tooltips, dropdowns, card lift
   dur4: 340, // Modals, sheets, tab indicator, digit roll
   dur5: 550, // Section reveals, tick flash, check draw
-  dur6: 890, // Hero entrance, logo loader, sparkline draw
+  dur6: 890, // Hero entrance, sparkline draw
   dur7: 1440, // Ambient loops (pulse)
 } as const;
 

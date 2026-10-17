@@ -14,7 +14,7 @@ export const NotFoundPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-canvas text-fg flex flex-col items-center justify-center gap-5 p-5 text-center">
-      <Logo variant="icon" tone="auto" height={40} linkHome />
+      <Logo variant="full" tone="auto" height={40} linkHome />
       <div className="flex flex-col gap-2">
         <h1 className="text-h3 font-semibold m-0">{t.shell.notFoundTitle}</h1>
         <p className="text-body text-fg-muted m-0">{t.shell.notFoundBody}</p>

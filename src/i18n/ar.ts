@@ -58,6 +58,8 @@ export const ar = {
       // Short forms for the mobile tab bar
       home: 'الرئيسية',
       matchShort: 'المطابقة',
+      advisorShort: 'المستشار',
+      premiumShort: 'Premium',
       portfolioShort: 'محفظتي',
       addShort: 'إضافة',
       salesShort: 'المبيعات',

@@ -33,12 +33,12 @@
 
 ---
 
-## 3. Brand Motifs (taken from the logo, used with restraint)
+## 3. Brand Motifs (used with restraint)
 
-The logo is four slanted bars and four small squares turning around a center: **connection** (صِلة). Three motifs come from it. They make Sila recognizable without decoration.
+The mark is an infinity loop cut by one slanted stroke: an unbroken **connection** (صِلة) and a currency-like stroke for value (05-logo §1). Two motifs carry Sila's look into the UI without decoration: the slant, which comes from the mark, and the square marker, a system choice.
 
 ### 3.1 The Sila Cut (20° slant)
-The long bars of the logo end with a ~20° slanted cut. The UI reuses this angle on a few small elements only:
+The mark's stroke crosses the loop at a ~20° slant. The UI reuses this angle on a few small elements only:
 ```css
 --slant: 20deg;
 /* inline-end top corner cut, size = 8px */
@@ -54,14 +54,14 @@ Allowed on (and only on):
 Never on buttons, inputs, cards or modals (those follow the radius lock).
 
 ### 3.2 Squares as data points
-The logo's small rounded squares become the **marker shape** everywhere a dot would normally appear:
+A small rounded square is the **marker shape** everywhere a dot would normally appear. It does not come from the mark (the old bars-and-squares logo is retired); it stays because it reads clearly at small sizes and keeps every chart consistent:
 - Chart markers, sparkline end point, legend swatches: **rounded squares** (size 8, radius 2), not circles.
 - Live indicator: an 8px rounded square with a soft opacity pulse (not a circle, not a glowing dot).
 - Step indicators in steppers: squares.
 This is a small, consistent signature across every chart.
 
-### 3.3 Four-around-one composition
-Used once on the landing page (trust/security section) and in the logo loader: four elements around a central value. Not used in the app layouts.
+### 3.3 Retired: four-around-one
+The "four elements around a centre" composition came from the old logo and is no longer a motif. The landing brand moment now assembles the new mark (05-logo §5).
 
 ---
 
@@ -81,7 +81,7 @@ Used once on the landing page (trust/security section) and in the logo loader: f
 - Heights 32/40/48/56, radius 8, label weight 500 (600 at xl), icon 20 (24 at xl), gap 8.
 - Variants and colors: 01-color 5.5. Max **one Accent (gold)** button per view.
 - Press: `scale(0.98)` + darker token, 80ms. Hover: color change 130ms. No lifting, no shadows on buttons.
-- Loading: label stays, a 16px inline progress (3 of the logo's squares pulsing in sequence) replaces the icon; width never changes; button `aria-busy="true"` and disabled against double submit.
+- Loading: label stays, a 16px inline progress (3 marker squares pulsing in sequence) replaces the icon; width never changes; button `aria-busy="true"` and disabled against double submit.
 - Labels: 1 to 3 words, one line always.
 
 ### 5.2 Inputs
@@ -194,7 +194,7 @@ No other chart library. No chart.js, no default Recharts look.
 ## 8. Imagery & Illustration
 
 - The primary visual of Sila is **its own live data and real UI components**. The landing's product showcases are built from the actual app components rendered with demo data (same code as the app), not fake div mockups or screenshots of nothing.
-- **Gold visual element** (landing only): an isometric gold bar built from flat facets using the logo's slanted-bar silhouette. Three flat faces: top `#ffcd54`, front `#ffb703`, side `#df8019`. No gradients, no shine sweep, no 3D render. Used to visualize grams (for example stacking bars by weight in the calculator).
+- **Gold visual element** (landing only): an isometric gold bar built from flat facets with the Sila cut (20° slant) on its ends. Three flat faces: top `#ffcd54`, front `#ffb703`, side `#df8019`. No gradients, no shine sweep, no 3D render. Used to visualize grams (for example stacking bars by weight in the calculator).
 - Photography: none by default. If ever used, real licensed photography only, color-graded cool (navy shadows), never behind text.
 - Banned: stock "businessman with tablet", gold coin 3D clichés, glowing globe networks, abstract blob shapes, AI-purple anything.
 

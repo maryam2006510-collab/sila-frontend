@@ -1,5 +1,5 @@
 // src/components/ui/PageLoader.tsx
-// Full-screen load (account restore, first route chunk): the brand icon over the loading squares,
+// Full-screen load (account restore, first route chunk): the brand mark over the loading squares,
 // on the page canvas, so the wait reads as Sila starting rather than a blank page.
 
 import React from 'react';
@@ -16,7 +16,7 @@ export const PageLoader: React.FC = () => {
       aria-busy="true"
     >
       <span className="text-fg">
-        <Logo variant="icon" tone="auto" height={40} />
+        <Logo variant="full" tone="auto" height={40} />
       </span>
       <LoadingSquares size="md" />
       <span className="sr-only">{t.common.loading}</span>

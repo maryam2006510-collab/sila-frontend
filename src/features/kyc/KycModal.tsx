@@ -100,7 +100,7 @@ const KycSheet: React.FC<{ request: KycRequest; close: () => void }> = ({ reques
       <div className="-mx-5 md:-mx-8 -mt-5 md:-mt-8 p-5 md:p-8 bg-surface-brand text-fg-on-brand mb-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <Logo variant="icon" tone="white" height={24} />
+            <Logo variant="full" tone="white" height={24} />
             <h3 className="text-h4 font-semibold m-0">{k.title}</h3>
           </div>
           {step !== 'verifying' && (
