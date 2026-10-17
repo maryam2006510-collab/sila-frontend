@@ -30,7 +30,7 @@ export const Topbar: React.FC<TopbarProps> = ({ title, short, prices }) => {
     <header className="h-14 lg:h-topbar sticky top-0 z-header bg-canvas border-b border-line-subtle flex items-center justify-between gap-3 px-4 md:px-8">
       <div className="flex items-center gap-3 min-w-0">
         <span className="lg:hidden shrink-0">
-          <Logo variant="icon" tone="auto" height={28} linkHome />
+          <Logo variant="full" tone="auto" height={22} linkHome />
         </span>
         {/* One step smaller on phones so titles like "مراجعة وتأكيد الشراء" fit beside the price chip */}
         <h1 className="text-body lg:text-h4 font-semibold text-fg m-0 truncate">

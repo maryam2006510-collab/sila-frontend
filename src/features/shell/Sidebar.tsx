@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onSwitchRole }
         }`}
       >
         {collapsed ? (
-          <Logo variant="icon" tone="white" height={32} linkHome />
+          <Logo variant="full" tone="white" height={22} linkHome />
         ) : (
           <>
             <Logo variant="full" tone="white" height={32} linkHome />

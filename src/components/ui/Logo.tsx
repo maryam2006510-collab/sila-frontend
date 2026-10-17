@@ -1,6 +1,6 @@
 // src/components/ui/Logo.tsx
-// Sila Brand Logo per UI Kit 05-logo-usage.md
-// Inline SVG with fill="currentColor": only Navy (Version 1) or White, set via CSS color.
+// Sila Brand Mark per UI Kit 05-logo-usage.md: one symbol (an infinity loop cut by a 20° slash),
+// no wordmark. Inline SVG with fill="currentColor": only Navy or White, set via CSS color.
 
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -8,15 +8,18 @@ import logoSvg from '@/assets/brand/sila-logo.svg?raw';
 import iconSvg from '@/assets/brand/sila-icon.svg?raw';
 import { useT } from '@/i18n';
 
-interface LogoProps {
-  variant?: 'full' | 'icon';
+// 05-logo §3: the mark is never under 48px wide (below that the slash disappears).
+// Full mark: height 22 is the smallest that keeps 48px of width. The square icon draws the mark
+// at 88% of its side, so it only reaches 48px from a side of 55: 84 is its one allowed size.
+type FullHeight = 22 | 24 | 28 | 32 | 40 | 52 | 84;
+type IconHeight = 84;
+
+type LogoProps = {
   // 'auto' = Navy on the light canvas, White on the dark canvas (05-logo §2)
   tone?: 'navy' | 'white' | 'auto';
-  // Allowed sizes from 05-logo §3.2 (full ≥ 24, icon ≥ 20)
-  height?: 24 | 28 | 32 | 40 | 52 | 84;
   className?: string;
   linkHome?: boolean;
-}
+} & ({ variant?: 'full'; height?: FullHeight } | { variant: 'icon'; height?: IconHeight });
 
 // The SVG files are trusted build-time assets (src/assets/brand), not user content
 const withSize = (svg: string) =>
@@ -33,14 +36,14 @@ const toneClass = {
 export const Logo: React.FC<LogoProps> = ({
   variant = 'full',
   tone = 'white',
-  height = 32,
+  height = variant === 'icon' ? 84 : 32,
   className = '',
   linkHome = false,
 }) => {
   const t = useT();
   const label = t.brand.homeLabel;
-  // Full logo 3:1 (1320×440), icon 1:1 (441×440)
-  const width = variant === 'full' ? height * 3 : height;
+  // Full mark 1000 × 449.91 (about 2.22 : 1), icon 1:1
+  const width = variant === 'full' ? Math.round((height * 1000) / 449.91) : height;
 
   // Block-level flex, never inline: an inline box sits on the text baseline and rides ~4px above
   // the centre of a nav row (D29)
