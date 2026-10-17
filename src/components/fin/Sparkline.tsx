@@ -81,7 +81,7 @@ export const Sparkline: React.FC<SparklineProps> = ({
           vectorEffect="non-scaling-stroke"
         />
       </svg>
-      {/* End marker: 8×8 rounded square (logo square motif), kept undistorted in HTML */}
+      {/* End marker: 8×8 rounded square (the system marker, 06-style §3.2), kept undistorted in HTML */}
       <span
         className="spark-end absolute size-2 rounded-2xs -translate-x-1/2 -translate-y-1/2"
         style={{ left: `${geometry.endX * 100}%`, top: geometry.endY, backgroundColor: color }}

@@ -1,5 +1,5 @@
 // src/components/fin/AiThinking.tsx
-// AI "thinking": three logo squares pulsing in sequence + an honest status line (07-motion #15),
+// AI "thinking": three marker squares pulsing in sequence + an honest status line (07-motion #15),
 // over skeletons of the result layout. Shared by Smart Match and the AI Advisor.
 
 import React from 'react';

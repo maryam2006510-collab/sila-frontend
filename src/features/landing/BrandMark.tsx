@@ -1,7 +1,8 @@
 // src/features/landing/BrandMark.tsx
-// Brand statement per UI Kit 08-ux §12 #7, 05-logo §5.3 & 06-style §3.3 ("four around one"):
-// the icon's pieces assemble toward the centre as the section scrolls (GSAP scrub owns the
-// pieces here). Reduced motion: the assembled icon, static.
+// Brand statement per UI Kit 08-ux §12 #7 and 05-logo §5: the mark assembles as the section
+// scrolls (GSAP scrub owns its three paths here). The loop's two pieces slide in from opposite
+// sides and meet, then the slash drops in along its own slant. One colour throughout: Navy on the
+// light canvas, White on the dark one. Reduced motion: the assembled mark, static.
 
 import React, { useRef } from 'react';
 import iconSvg from '@/assets/brand/sila-icon.svg?raw';
@@ -24,30 +25,33 @@ export const BrandMark: React.FC = () => {
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         const svg = scope.current!.querySelector('svg')!;
         const box = svg.getBoundingClientRect();
-        const cx = box.left + box.width / 2;
-        const cy = box.top + box.height / 2;
+        const piece = (n: number) => svg.querySelector<SVGPathElement>(`[data-piece="${n}"]`)!;
+        const loop = piece(1);
+        const inner = piece(2);
+        const slash = piece(3);
+        // Measured before any write: reading layout between writes would force a reflow each time
+        const s = slash.getBoundingClientRect();
+        const reveal = { trigger: scope.current, scrub: T.scrub };
+        const shift = box.width * 0.3;
 
-        // Each piece starts pushed outward along its own direction from the centre. All pieces are
-        // measured first, then animated: measuring between writes would force a layout per piece.
-        const pieces = gsap.utils.toArray<SVGPathElement>('[data-piece]');
-        const offsets = pieces.map((piece) => {
-          const r = piece.getBoundingClientRect();
-          return { dx: (r.left + r.width / 2 - cx) * 0.6, dy: (r.top + r.height / 2 - cy) * 0.6 };
-        });
-        pieces.forEach((piece, i) => {
-          const { dx, dy } = offsets[i];
-          gsap.fromTo(
-            piece,
-            { x: dx, y: dy, opacity: 0 },
-            {
-              x: 0,
-              y: 0,
-              opacity: 1,
-              ease: 'none',
-              scrollTrigger: { trigger: scope.current, start: 'top 80%', end: 'center 55%', scrub: T.scrub },
-            }
-          );
-        });
+        // The loop and its inner piece come from opposite sides (the mark is never mirrored, so
+        // these are physical directions in both languages)
+        gsap.fromTo(
+          loop,
+          { x: shift, opacity: 0 },
+          { x: 0, opacity: 1, ease: 'none', scrollTrigger: { ...reveal, start: 'top 80%', end: 'center 60%' } }
+        );
+        gsap.fromTo(
+          inner,
+          { x: -shift, opacity: 0 },
+          { x: 0, opacity: 1, ease: 'none', scrollTrigger: { ...reveal, start: 'top 80%', end: 'center 60%' } }
+        );
+        // The slash runs from upper right to lower left: it drops in along that same line
+        gsap.fromTo(
+          slash,
+          { x: s.width * 1.5, y: -s.height * 1.5, opacity: 0 },
+          { x: 0, y: 0, opacity: 1, ease: 'none', scrollTrigger: { ...reveal, start: 'top 65%', end: 'center 55%' } }
+        );
         gsap.from('[data-brand-line]', {
           opacity: 0,
           y: 20,
@@ -67,7 +71,10 @@ export const BrandMark: React.FC = () => {
       className="container-landing px-5 md:px-8 xl:px-13 py-21 lg:py-34"
     >
       <div className="grid grid-cols-1 md:grid-cols-golden-rev gap-13 items-center">
-        <div className="brand-mark size-g3 lg:size-g4 justify-self-center" dangerouslySetInnerHTML={ICON_MARKUP} />
+        <div
+          className="size-g3 lg:size-g4 justify-self-center text-logo-on-canvas"
+          dangerouslySetInnerHTML={ICON_MARKUP}
+        />
         <p data-brand-line className="m-0 text-h2 sm:text-h1 lg:text-display-lg font-bold text-fg">
           {noOrphan(t.landing.brand.line)}
         </p>
