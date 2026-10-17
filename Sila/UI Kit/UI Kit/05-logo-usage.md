@@ -119,7 +119,7 @@ Heights come from the type and icon ladders, never a random pixel value.
 
 1. **Nav and app**: static. No hover animation, no rotation, no pulse. The mark is a home link (`aria-label="صِلة، الصفحة الرئيسية"`) with a focus ring only.
 2. **Page loader**: the static mark above the three loading squares. The mark itself never spins or pulses.
-3. **Landing brand moment** (one section): the mark assembles as the section scrolls (GSAP scrub). The loop's two pieces slide in from opposite sides and meet in the centre, then the slash drops in along its own slant. One color throughout (`auto`). Reduced motion: the assembled mark, static. The SVG's three paths carry `data-piece="1"` (loop), `"2"` (inner piece), `"3"` (slash).
+3. **Landing brand moment** (one section): the mark assembles as the section scrolls (GSAP scrub). The loop's two pieces slide in from opposite sides and meet in the centre, then the slash drops in along its own slant. One color throughout (`auto`). Reduced motion: the assembled mark, static. The SVG's three pieces carry `data-piece="1"` (loop), `"2"` (inner piece), `"3"` (slash, on a wrapping `<g>` because its path has its own transform, which the animation would overwrite).
 
 ---
 

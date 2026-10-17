@@ -244,7 +244,7 @@ useEffect(() => {
 ```
 
 ### 5.3 Brand-mark assembly (GSAP, landing only)
-The square icon's three paths carry `data-piece`: `1` the loop, `2` its inner piece, `3` the slash.
+The square icon's three pieces carry `data-piece`: `1` the loop, `2` its inner piece, `3` the slash (a wrapping `<g>`: the slash path has its own transform, which GSAP would overwrite).
 ```tsx
 gsap.fromTo(loop,  { x:  shift, opacity: 0 }, { x: 0, opacity: 1, scrollTrigger: { scrub } });
 gsap.fromTo(inner, { x: -shift, opacity: 0 }, { x: 0, opacity: 1, scrollTrigger: { scrub } });

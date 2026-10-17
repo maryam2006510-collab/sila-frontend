@@ -25,7 +25,8 @@ export const BrandMark: React.FC = () => {
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         const svg = scope.current!.querySelector('svg')!;
         const box = svg.getBoundingClientRect();
-        const piece = (n: number) => svg.querySelector<SVGPathElement>(`[data-piece="${n}"]`)!;
+        // The slash is a group: its path has its own transform, which GSAP would overwrite
+        const piece = (n: number) => svg.querySelector<SVGGraphicsElement>(`[data-piece="${n}"]`)!;
         const loop = piece(1);
         const inner = piece(2);
         const slash = piece(3);
