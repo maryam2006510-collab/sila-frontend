@@ -64,7 +64,7 @@ Derived:
 
 ## 4. Radius Tokens · Fibonacci
 
-The logo's bars have small, tight rounded corners. The UI follows that: soft, never bubbly.
+Corners stay small and tight: soft, never bubbly.
 
 | Token | Value | Applies to (and only to) |
 |---|---|---|

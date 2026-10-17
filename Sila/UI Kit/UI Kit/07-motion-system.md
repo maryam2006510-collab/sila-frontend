@@ -11,7 +11,7 @@
 |---|---|---|
 | **Motion** (`motion/react`) | All React UI state motion: route transitions, modals/sheets, dropdowns, toasts, tab and segmented indicators (`layoutId`), list add/remove (`AnimatePresence`), **digit roll** of live prices, simple in-view reveals, hover/press springs where CSS is not enough | App + landing (core bundle) |
 | **GSAP** + ScrollTrigger + SplitText | **Landing page only**: scroll-driven storytelling, pinned product walkthrough, the single horizontal section, scrubbed timelines, hero headline split reveal, brand-mark scroll assembly | Landing route chunk only (dynamic import). Never in the app bundle |
-| **Anime.js v4** | **SVG and small choreography**: sparkline/line drawing (`svg.createDrawable`), checkmark drawing, logo loader assembly (8 pieces), square-marker staggers, AI "thinking" squares, gold-bar stacking in the landing calculator | App + landing, per component |
+| **Anime.js v4** | **SVG and small choreography**: sparkline/line drawing (`svg.createDrawable`), checkmark drawing, square-marker staggers, AI "thinking" squares, gold-bar stacking in the landing calculator | App + landing, per component |
 | **CSS transitions** | Color, border, background, icon regular↔fill crossfade, skeleton pulse, live-square pulse | Everywhere |
 
 ### Isolation rules (prevent frame fights and bugs)
@@ -34,7 +34,7 @@
 | `--dur-3` | 210 | Tooltips, dropdowns, route fade, card hover lift |
 | `--dur-4` | 340 | Modals, sheets, tab indicator, digit roll |
 | `--dur-5` | 550 | Section reveals, tick flash, success check draw |
-| `--dur-6` | 890 | Hero entrance, logo loader, sparkline draw, count-up |
+| `--dur-6` | 890 | Hero entrance, sparkline draw, count-up |
 | `--dur-7` | 1440 | Ambient loops (live square pulse, skeleton pulse) |
 
 Rule: exits are faster than entrances (≈ 0.6×). Nothing in the app is longer than 890ms. Nothing blocks input while animating.
@@ -93,7 +93,7 @@ No bouncy springs (damping ratio < 0.7) anywhere: money UI must not wobble.
 | 18 | Purchase success | Checkmark draws, then new gold balance counts up. **No confetti** | Anime | 550 + 890 |
 | 19 | Form error | Field border to danger + message fades in (y 4). **No shaking** | CSS | 210 |
 | 20 | Copy signature hash | `Copy` → `Check` icon crossfade, back after 1.6s | CSS | 80 |
-| 21 | Logo loader (first load > 400ms) | 4 bars slide in along their axis (±32px) + fade, 4 squares scale 0.6 → 1, stagger 55 | Anime `createTimeline` | 890 total |
+| 21 | Page loader (first load > 400ms) | Static mark above the three loading squares; the mark itself does not animate | CSS (squares) | |
 
 ### 3.1 Live price rules
 - Visual updates at most **once per second** even if data arrives faster (throttle in the store).
@@ -192,7 +192,7 @@ mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
 | Market ticker strip | Continuous marquee, 40px/s, pauses on hover/focus, the only marquee on the page | CSS keyframes on `transform` |
 | Price calculator | Gold bars stack as grams increase (each bar y 20 → 0, stagger 34) | Anime |
 | Commission tiers | Tier bars grow `scaleY` when in view, once | Motion `whileInView` |
-| Brand-mark moment | Logo pieces assemble scrubbed by scroll (tonal navy/blue fills) | GSAP scrub (pieces are GSAP-owned there) |
+| Brand-mark moment | The loop's two pieces slide in from opposite sides and meet, then the slash drops in along its slant, scrubbed by scroll, one color | GSAP scrub (pieces are GSAP-owned there) |
 | Section reveals | y 32 → 0 + fade, once, `amount: 0.3` | Motion `whileInView` |
 
 Parallax: allowed only on the decorative gold-bar element, max 40px travel. No parallax on text.
@@ -243,14 +243,15 @@ useEffect(() => {
 }, [reduceMotion]);
 ```
 
-### 5.3 Logo loader (Anime.js v4)
+### 5.3 Brand-mark assembly (GSAP, landing only)
+The square icon's three paths carry `data-piece`: `1` the loop, `2` its inner piece, `3` the slash.
 ```tsx
-import { createTimeline, stagger } from "animejs";
-const tl = createTimeline({ defaults: { ease: "outExpo", duration: 550 } });
-tl.add('[data-kind="bar"]', { opacity: [0, 1], translateX: (el, i) => [[32, 0, -32, 0][i], 0], translateY: (el, i) => [[0, 32, 0, -32][i], 0], delay: stagger(55) })
-  .add('[data-kind="square"]', { opacity: [0, 1], scale: [0.6, 1], delay: stagger(55) }, "-=340");
+gsap.fromTo(loop,  { x:  shift, opacity: 0 }, { x: 0, opacity: 1, scrollTrigger: { scrub } });
+gsap.fromTo(inner, { x: -shift, opacity: 0 }, { x: 0, opacity: 1, scrollTrigger: { scrub } });
+// The slash runs upper right to lower left: it drops in along that line
+gsap.fromTo(slash, { x: w * 1.5, y: -h * 1.5, opacity: 0 }, { x: 0, y: 0, opacity: 1, scrollTrigger: { scrub } });
 ```
-Uses `assets/sila-icon.svg` whose paths carry `data-kind`. The agent must check each bar's real orientation and set the slide axis per piece so every bar slides along its own length.
+One color (`--logo-on-canvas`). The old 8-piece "logo loader" is retired with the old logo.
 
 ### 5.4 Reduced motion (mandatory)
 ```tsx

@@ -18,7 +18,7 @@
 | Background dark | - | Abyss Navy | `#023047` | `bg-canvas` (dark) |
 | Background light | - | White | `#ffffff` | `bg-canvas` (light) |
 
-The logo files use the same values: `Logo 1 = #023047`, `Logo 2 = #126782`, `Logo 3 = #219ebc`, `Logo 4 = #8ecae6`. The logo and the UI share one palette.
+The mark uses the same palette: Navy `#023047` and White in the product, Gold `#ffb703` and Black `#05131c` for print and marketing only (05-logo §2).
 
 ### Why the accent is gold
 Sila is a gold marketplace. The accent is not decoration: **gold = the asset + the one primary action on screen**. That meaning is protected (section 7).
