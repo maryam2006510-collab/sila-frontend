@@ -53,6 +53,8 @@ export const en: Messages = {
       more: 'More',
       home: 'Home',
       matchShort: 'Match',
+      advisorShort: 'Advisor',
+      premiumShort: 'Premium',
       portfolioShort: 'Portfolio',
       addShort: 'Add',
       salesShort: 'Sales',

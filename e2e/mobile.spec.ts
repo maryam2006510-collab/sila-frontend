@@ -38,9 +38,10 @@ test('mobile: topbar titles fit beside the price chip at 360px', async ({ page }
   await button(page, 'مستثمر موثّق').click();
   await expect(page).toHaveURL(/\/app$/);
 
-  for (const path of ['/app', '/app/match', `/app/checkout/${LISTING_22K}`, '/app/insights']) {
+  for (const path of ['/app', '/app/match', '/app/advisor', `/app/checkout/${LISTING_22K}`, '/app/insights']) {
     await page.goto(path);
-    const title = page.locator('header h1');
+    // The topbar comes first; some pages have their own header further down
+    const title = page.locator('header h1').first();
     await expect(title).toBeVisible();
     expect(await title.evaluate((h) => h.scrollWidth > h.clientWidth), path).toBe(false);
   }

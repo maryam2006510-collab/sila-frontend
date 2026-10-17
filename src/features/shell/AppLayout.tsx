@@ -28,8 +28,8 @@ const getPageTitle = (path: string, s: Shell): { title: string; short?: string }
   const { nav, pageTitles } = s;
   if (path.includes('/market/')) return { title: pageTitles.listingDetail };
   if (path.includes('/market')) return { title: nav.market };
-  if (path.includes('/match')) return { title: nav.match };
-  if (path.includes('/advisor')) return { title: nav.advisor };
+  if (path.includes('/match')) return { title: nav.match, short: nav.matchShort };
+  if (path.includes('/advisor')) return { title: nav.advisor, short: nav.advisorShort };
   if (path.includes('/admin/users')) return { title: nav.adminUsers };
   if (path.includes('/admin/listings')) return { title: nav.adminListings };
   if (path.includes('/admin/password-requests')) return { title: nav.adminRequests, short: nav.adminRequestsShort };
@@ -41,7 +41,7 @@ const getPageTitle = (path: string, s: Shell): { title: string; short?: string }
   if (path.includes('/listings/new')) return { title: nav.addListing };
   if (path.includes('/listings')) return { title: nav.myListings };
   if (path.includes('/sales')) return { title: nav.sales };
-  if (path.includes('/premium') || path.includes('/insights')) return { title: nav.premium };
+  if (path.includes('/premium') || path.includes('/insights')) return { title: nav.premium, short: nav.premiumShort };
   if (path.includes('/settings')) return { title: nav.settings };
   return { title: nav.dashboard };
 };
